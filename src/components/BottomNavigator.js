@@ -2,8 +2,8 @@ import React from 'react'
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import HomeScreen from '../screens/HomeScreen';
-import MenuScreen from '../screens/MenuScreen';
+// import HomeScreen from '../screens/HomeScreen';
+// import MenuScreen from '../screens/MenuScreen';
 import MailScreen from '../screens/MailScreen';
 import UserScreen from '../screens/UserScreen';
 import PostScreen from '../screens/PostScreen';

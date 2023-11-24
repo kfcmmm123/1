@@ -1,22 +1,37 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import colors from '../../assets/colors/colors';
+import MailSearchBar from '../components/MailSearchBar';
 
 const MailScreen = ({navigation}) => {
-    return <View style = {styles.container}>
-        <Text>Notifications!</Text>
-        <Button
-          title = "Click Here!"
-          onPress = {() => alert('Button Clicked!')}
-      />
-    </View>
+    return(
+        <View>
+            <TouchableOpacity onPress = { () => navigation.navigate('AboutUs')}>
+                <Image source = {require('../../assets/adaptive-icon-cropped.png')} style = {{
+                    width: 60,
+                    height: 60,
+                    marginTop: 60,
+                    marginLeft: 15,
+                }}/>
+            </TouchableOpacity>
+            <Text style = { styles.header }>Mail</Text>
+            <MailSearchBar/>
+            <StatusBar style = "auto" />
+        </View>
+    );
 }
 
-const styles =  StyleSheet.create({
-    container: {
-        flex:1, 
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+const styles = StyleSheet.create ({
+    header: {
+        color: colors.primary,
+        fontFamily: 'PingFangSC-Semibold', 
+        fontSize: 36, 
+        marginVertical: 15,
+        marginLeft: 35,
+        textAlign: 'left', 
+    }, 
 })
 
-export default MailScreen
+export default MailScreen; 
