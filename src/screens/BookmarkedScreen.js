@@ -5,6 +5,8 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from '../../assets/colors/colors';
 import BookmarkedSearchBar from '../components/BookmarkedSearchBar';
 
+//hi
+
 const BookmarkedScreen = ({navigation}) => {
     return(
         <View>
