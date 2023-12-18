@@ -19,7 +19,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.leoyin.voluntrack",
-      "buildNumber": "3"
+      "buildNumber": "3",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDT1TkCXgEDl6eH-mpW7Zq1dBiLX3A6e6E"
+      }
     },
     "android": {
       "package": "com.leoyin.voluntrack",
@@ -27,6 +30,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#FFFFFF"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDT1TkCXgEDl6eH-mpW7Zq1dBiLX3A6e6E"
+        }
       }
     },
     "web": {
@@ -34,7 +42,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "00ab2240-c3a4-4974-87cf-2d41f65b9b0e"
+        "projectId": "b4d3eb0d-9bba-4a3e-8c12-f541792f71f4"
       }
     }
   }

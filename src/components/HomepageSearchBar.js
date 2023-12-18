@@ -29,7 +29,11 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         marginHorizontal: 30,
         flexDirection: 'row',
-        marginBottom: 10
+        marginBottom: 10,
+        borderWidth: 1, // 设置边框宽度
+        borderColor: colors.primary, // 假设 colors.primary 是您想要的蓝色
+        borderRadius: 10,
+        
     },
 
     inputStyle: {

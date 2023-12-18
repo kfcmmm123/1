@@ -10,7 +10,7 @@ export default () => {
     try {
         const response = await yelp.get('/search', {
             params: {
-                location: 'toronto',
+                location: 'canada',
                 term: searchTerm,
                 categories: 'Volunteer',
                 sort_by: 'best_match',

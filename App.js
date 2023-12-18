@@ -34,6 +34,8 @@ const MailStackScreen = () => {
   );
 };
 
+const RootStack = createNativeStackNavigator();
+
 const TabNavigator = () => {
   return (
     <Tab.Navigator
@@ -77,7 +79,31 @@ const TabNavigator = () => {
 export default function App() {
   return (
     <NavigationContainer>
-      <TabNavigator />
+      <RootStack.Navigator>
+        <RootStack.Screen
+          name="Main"
+          component={TabNavigator}
+          options={{ headerShown: false }}
+        />
+        <RootStack.Screen
+          name="AboutUsScreen"
+          component={AboutUsScreen}
+          options={{ 
+            headerShown: true,
+            title: 'About Us'
+          }}
+        />
+        {/* Add the VolunteeringScreen to the RootStack */}
+        <RootStack.Screen
+          name="VolunteeringScreen"
+          component={VolunteeringScreen}
+          options={{
+            headerShown: true,
+            title: 'Volunteering Details' // Set your desired screen title here
+          }}
+        />
+        {/* Add other screens not in the bottom tab bar here */}
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 };
