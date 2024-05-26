@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, TextInput, Button, StyleSheet, Text, Alert, TouchableOpacity, ScrollView } from 'react-native';
-import { DateTimePicker } from '@react-native-community/datetimepicker';
 
 const Stack = createStackNavigator();
 
