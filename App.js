@@ -150,7 +150,7 @@ export default function App() {
               name="ProfileSettingScreen"
               component={ProfileSettingScreen}
               options={{
-                headerShown: true,
+                headerShown: false,
                 title: 'ProfileSetting'
               }}
             />
