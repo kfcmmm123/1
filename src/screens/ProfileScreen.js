@@ -1,81 +1,140 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, Button, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView } from 'react-native';
 import { auth, db } from '../api/firebaseConfig';
-import { onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { useFocusEffect } from '@react-navigation/native';
-import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
+import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import colors from '../../assets/colors/colors';
 
 const ProfileScreen = ({ navigation }) => {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [refreshing, setRefreshing] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const firstLoad = useRef(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const isMounted = useRef(true);
 
-    useFocusEffect(
-      useCallback(() => {
-        const resetStateIfNeeded = async () => {
-          const shouldReset = await AsyncStorage.getItem('resetFirstLoad');
-          if (shouldReset === 'true') {
-            firstLoad.current = true;
-            await AsyncStorage.removeItem('resetFirstLoad');
-          }
-  
-          if (firstLoad.current) {
-            setLoading(true);
-            fetchUserData();
-            firstLoad.current = false;
-          }
+  useFocusEffect(
+    useCallback(() => {
+        const fetchUserData = async () => {
+            const storedUserData = await AsyncStorage.getItem('@user_data');
+            if (storedUserData) {
+                const userData = JSON.parse(storedUserData);
+                setCurrentUser(userData);
+            } else {
+                // Optionally fetch from Firestore if needed or handle user not found
+            }
         };
-  
-        resetStateIfNeeded();
-      }, [])
-    );
+        fetchUserData();
+    }, [])
+  );
 
-    useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, user => {
-        if (user) {
-          fetchUserData();
-        } else {
-          setCurrentUser(null); // Ensure user state is reset
-          setLoading(false); // Stop loading state
-          AsyncStorage.removeItem('@user_data'); // Optionally clear user data
-        }
-      });
-    
-      return () => unsubscribe(); // Correctly unsubscribe on component unmount
-    }, []);
-    
+  useFocusEffect(
+    useCallback(() => {
+        const checkUser = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('@user_data');
+                const userData = jsonValue != null ? JSON.parse(jsonValue) : null;
+                if (userData) {
+                    setCurrentUser(userData);
+                } else {
+                    setCurrentUser(null);
+                }
+            } catch (e) {
+                console.error('Failed to load user data:', e);
+                Alert.alert('Error', 'Failed to load data');
+            }
+        };
 
-    const fetchUserData = async () => {
+        checkUser();
+    }, [])
+  );
+
+  useEffect(() => {
+    const loadUserData = async () => {
       try {
-        const user = auth.currentUser;
-        if (user) {
-          const userDocRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(userDocRef);
-          if (docSnap.exists()) {
-            const userData = docSnap.data();
-            setCurrentUser(userData);
-            console.log(userData);
-            await AsyncStorage.setItem('@user_data', JSON.stringify(userData));
-          } else {
-            console.log("No user data available");
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      } finally {
-        setLoading(false);
+        const jsonValue = await AsyncStorage.getItem('@user_data');
+        return jsonValue != null ? JSON.parse(jsonValue) : null;
+      } catch (e) {
+        console.error('Failed to load user data', e);
+        return null;
       }
     };
 
-    const onRefresh = useCallback(() => {
-      setRefreshing(true);
-      fetchUserData().finally(() => setRefreshing(false));
+    const checkUserAuthentication = async () => {
+      const storedUserData = await loadUserData();
+      if (storedUserData) {
+        setCurrentUser(storedUserData);
+        setLoading(false);
+      } else {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user && user.emailVerified) {
+            // Fetch and set user data here
+            setLoading(false);
+          } else {
+            setCurrentUser(null);
+            setLoading(false);
+          }
+        });
+        return () => {
+          unsubscribe();
+          isMounted.current = false;
+        };
+      }
+    };
+
+    checkUserAuthentication();
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      await AsyncStorage.removeItem('@user_data'); // Clear stored user data
+      setCurrentUser(null);
+      navigation.replace('SignInScreen'); // Replace the current screen with the sign-in screen
+    } catch (error) {
+      console.error('Error signing out: ', error);
+      alert('Failed to sign out.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  const getUserProfile = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists() && isMounted.current) {
+        const userData = userDoc.data();
+        setCurrentUser(userData);
+        await saveUserData(userData);
+      }
+    }
+    if (isMounted.current) {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      const timeout = setTimeout(() => {
+        setLoading(false);
+        console.error('Timeout: Failed to get user profile');
+      }, 5000);
+      getUserProfile()
+        .then(() => clearTimeout(timeout))
+        .catch((error) => {
+          clearTimeout(timeout);
+          console.error(error);
+        });
+    }, [])
+  );
 
   const saveUserData = async (userData) => {
     try {
@@ -146,7 +205,7 @@ const ProfileScreen = ({ navigation }) => {
 
   if (!currentUser) {
     return (
-      <View style={styles.before}>
+      <View style={styles.container}>
         <Image
           source={require('../../assets/images/profileImage.png')}
           style={styles.illustration}
@@ -163,25 +222,47 @@ const ProfileScreen = ({ navigation }) => {
     );
   }
 
+  const Tab = createMaterialTopTabNavigator();
+
+  function PostScreen() {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={{color: 'grey', fontSize: 20}}>
+          Start sharing posts
+        </Text>
+        <Text style={{color: 'grey', fontSize: 20}}>
+          Once you do, the posts will show up here.
+        </Text>
+      </View>
+    );
+  }
+
+  function BookmarkScreen() {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text>
+          Bookmark Screen
+        </Text>
+      </View>
+    );
+  }
+
+  function ConnectionScreen() {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text>
+          Component Screen
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView
-      style={styles.scrollView}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}          
-        />
-      }
-    >
-      <View style={styles.container}>
-        <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')}>
-            <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
-            <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.icon} />
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.about_us_profile_setting}>
+        <TouchableOpacity style={styles.aboutUs} onPress={() => navigation.navigate('AboutUsScreen')}>
+          <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
+        </TouchableOpacity>
         
         <View style={styles.profileContainer}>
           <Image
@@ -191,47 +272,79 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.profileName}>{currentUser.displayName || 'Someone Awesome'}</Text>
 
           <Text style={styles.bio}>{currentUser.bio || 'This person is lazy, left no description..'}</Text>
-          
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
-              <Text style={styles.statLabel}>Volunteered</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.facilitated || 0}</Text>
-              <Text style={styles.statLabel}>Facilitated</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.events || 0}</Text>
-              <Text style={styles.statLabel}>Events</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.group || 0}</Text>
-              <Text style={styles.statLabel}>Group</Text>
-            </View>
-          </View>
+        </View>
+
+        <TouchableOpacity style={styles.setting} onPress={() => navigation.navigate('ProfileSettingScreen')}>
+          <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.icon} />
+        </TouchableOpacity>
+      </View>
+      
+      <View style={styles.statsContainer}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
+          <Text style={styles.statLabel}>Volunteer</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{currentUser.facilitated || 0}</Text>
+          <Text style={styles.statLabel}>Facilitated</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{currentUser.events || 0}</Text>
+          <Text style={styles.statLabel}>Events</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{currentUser.group || 0}</Text>
+          <Text style={styles.statLabel}>Group</Text>
         </View>
       </View>
-    </ScrollView>
+      
+      <View style={styles.utilityContainer}>
+        <Tab.Navigator style={styles.tab} tabBarPosition='top'>
+          <Tab.Screen name="Posts" component={PostScreen} options={{
+            tabBarShowLabel: false,
+            tabBarIcon: ({ focused }) => (
+              <Image
+                source={require('../../assets/icons/profile_posts.png')}
+                style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
+              />
+            )
+          }} 
+          />
+          <Tab.Screen name="Bookmarks" component={BookmarkScreen} options={{
+            tabBarShowLabel: false,
+            tabBarIcon: ({ focused }) => (
+              <Image
+                source={require('../../assets/icons/profile_bookmark.png')}
+                style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
+              />
+            )
+          }}
+            />
+          <Tab.Screen name="Connections" component={ConnectionScreen} options={{
+            tabBarShowLabel: false,
+            tabBarIcon: ({ focused }) => (
+              <Image
+                source={require('../../assets/icons/profile_connections.png')}
+                style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
+              />
+            )
+          
+          }}
+          />
+        </Tab.Navigator>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  before:{
+  container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
   },
-  scrollView: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  container: {
-      paddingTop: 60,
-      paddingHorizontal: 15,
-  },
-  topBar: {
+  about_us_profile_setting: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -252,15 +365,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'black',
     textAlign: 'center',
-    paddingHorizontal: 30,
-    marginBottom: 10,
+    paddingHorizontal: 5,
+    marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
     color: '#555',
     textAlign: 'center',
-    paddingHorizontal: 30,
-    marginBottom: 40,
+    paddingHorizontal: 5,
+    marginBottom: 5,
   },
   button: {
     width: '80%',
@@ -268,7 +381,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginBottom: 15,
     alignItems: 'center',
-    alignSelf: 'center',
   },
   signUpButton: {
     backgroundColor: colors.primary,
@@ -291,17 +403,26 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: 'white',
-    paddingTop: 50,
+    alignItems: 'center',
   },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 10,
+  about_us_profile_setting: {
+    marginTop: 60,
+    width: '100%',
+  },
+  aboutUs: {
+    position: 'absolute',
+    top: 0,
+    left: 20,
+  },
+  setting: {
+    position: 'absolute',
+    top: 0,
+    right: 20,
   },
   profileContainer: {
+    position: 'relative',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 0,
   },
   profileImage: {
     width: 100,
@@ -315,16 +436,30 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 10,
     color: '#000',
+    textAlign: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   bio:{
     fontSize: 16,
     marginBottom: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
     paddingVertical: 20,
+  },
+  utilityContainer: {
+    flex: 1,
+    width: '100%',    
+  },
+  tab: {
+    width: '100%',
+    justifyContent: 'space-between',
+    paddingHorizontal: 0,
   },
   statItem: {
     alignItems: 'center',
@@ -339,8 +474,12 @@ const styles = StyleSheet.create({
   icon: {
     width: 60,
     height: 60,
-    marginBottom: 15,
+    marginBottom: 5,
   },
+  tabIcon: {
+    width: 25,
+    height: 25,
+  }
 });
 
 export default ProfileScreen;

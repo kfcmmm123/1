@@ -1,119 +1,150 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
-import { auth, db } from '../api/firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import colors from '../../assets/colors/colors';
+import React, { useState, useCallback } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { View, TextInput, Button, StyleSheet, Text, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { DateTimePicker } from '@react-native-community/datetimepicker';
 
-const ProfileSettingsScreen = ({ navigation }) => {
+const Stack = createStackNavigator();
+
+const AccountSettingScreen = () => {
+
   const [profileData, setProfileData] = useState({
     displayName: '',
     bio: '',
-    hobbies: [],
-    birthday: '',
-    city: '',
   });
 
-  useEffect(() => {
-    const loadProfileData = async () => {
-      if (auth.currentUser) {
-        const userDocRef = doc(db, 'users', auth.currentUser.uid);
-        const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setProfileData(data);
-          // Optionally update local storage if needed
-          await AsyncStorage.setItem('@user_data', JSON.stringify(data));
-        } else {
-          Alert.alert('Error', 'No profile data found.');
-        }
-      }
-    };
-    loadProfileData();
-  }, []);
-
-  const navigateToInterests = () => {
-    navigation.navigate('EditInterestScreen', { userInfo: profileData, currentInterests: profileData.hobbies || [] });
-  };
-
   const saveProfileData = async () => {
-    const newData = { ...profileData };
-    try {
-      const userDocRef = doc(db, 'users', auth.currentUser.uid);
-      // Update Firestore
-      await setDoc(userDocRef, newData, { merge: true });
-      // Update AsyncStorage with the same data to keep local sync with the cloud
-      await AsyncStorage.setItem('@user_data', JSON.stringify(newData));
-      Alert.alert('Success', 'Profile updated successfully!');
-      navigation.navigate('Profile');
-    } catch (error) {
-      console.error('Error updating profile data:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
-    }
+    // 保存数据的逻辑
+    console.log('Data saved:', profileData);
+    navigation.navigate('Profile');
   };
-  
-  
+
   const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      await AsyncStorage.removeItem('@user_data'); // Clear stored user data
-      await AsyncStorage.setItem('resetProfileScreen', 'true'); // Set a flag when signing out
-      Alert.alert('Sign Out', 'You have signed out!');
-      navigation.navigate('Profile');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      Alert.alert('Error', 'Failed to sign out.');
-    }
+    // 登出逻辑
+    console.log('User signed out');
+    navigation.navigate('Profile');
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Profile Settings</Text>
-      <Text style={styles.label}>User Name</Text>
+      <Text>Profile Settings</Text>
       <TextInput
         style={styles.input}
         placeholder="Display Name"
         value={profileData.displayName}
         onChangeText={(text) => setProfileData({ ...profileData, displayName: text })}
       />
-      <Text style={styles.label}>Bio</Text>
       <TextInput
         style={styles.input}
         placeholder="Bio"
-        multiline
-        numberOfLines={2}
         value={profileData.bio}
         onChangeText={(text) => setProfileData({ ...profileData, bio: text })}
       />
-      <Text style={styles.label}>Birthday</Text>
+      <Button title="Save" onPress={saveProfileData} />
+      <Button title="Sign Out" onPress={handleSignOut} />
+    </View>
+  );
+};
+
+const PersonalDataSettingScreen = () => {
+
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    birthday: '',
+  });
+
+  return (
+    <View style={styles.container}>
+      <Text>First Name</Text>
       <TextInput
         style={styles.input}
-        placeholder="Your birthday"
-        multiline
-        numberOfLines={2}
+        placeholder='First Name'
+        value={profileData.firstName}
+      />
+      <Text>Last Name</Text>
+      <TextInput
+        style={styles.input}
+        placeholder='Last Name'
+        value={profileData.lastName}
+      />
+      <Text>Email</Text>
+      <TextInput
+        style={styles.input}
+        placeholder='Email'
+        value={profileData.email}
+      />
+      <Text>Phone Number</Text>
+      <TextInput
+        style={styles.input}
+        placeholder='Phone Number'
+        value={profileData.phoneNumber}
+      />
+      <Text>Birthday</Text>
+      <TextInput
+        style={styles.input}
+        placeholder='Birthday'
         value={profileData.birthday}
-        onChangeText={(text) => setProfileData({ ...profileData, birthday: text })}
       />
-      <Text style={styles.label}>City</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="City you live or work"
-        multiline
-        numberOfLines={2}
-        value={profileData.city}
-        onChangeText={(text) => setProfileData({ ...profileData, city: text })}
-      />
-      <TouchableOpacity style={styles.button} onPress={navigateToInterests}>
-        <Text style={styles.buttonText}>Edit Interests</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={saveProfileData}>
-        <Text style={styles.buttonText}>Save Changes</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
-        <Text style={styles.buttonText}>Sign Out</Text>
+      <TouchableOpacity style={styles.button} onPress={() => {}}>
+        <Text>Save Changes</Text>
       </TouchableOpacity>
     </View>
+  );
+};
+
+const SkillSettingScreen = () => {
+  return (
+    <View style={styles.container}>
+      <Text>Skill Settings</Text>
+    </View>
+  );
+};
+
+const ProfileSettingsScreen = ({ navigation }) => {
+
+  function ProfileHomeScreen() {
+    return (
+      <ScrollView style={styles.container}>
+        <TouchableOpacity onPress={() => navigation.navigate('AccountSettingScreen')}>
+          <Text style={styles.sectionTitle}>Account Settings</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('PersonalDataSettingScreen')}>
+          <Text style={styles.sectionTitle}>Personal Data Settings</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('SkillSettingScreen')}>
+          <Text style={styles.sectionTitle}>Skill Settings</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  }
+
+  return (
+    <Stack.Navigator initialRouteName="ProfileHomeScreen">
+      <Stack.Screen name="ProfileHomeScreen" component={ProfileHomeScreen}
+      options={{
+        title: 'Profile Settings',
+      }}
+      />
+      <Stack.Screen name="AccountSettingScreen" component={AccountSettingScreen} 
+      options={{
+        title: 'Account Settings',
+      }}
+      />
+      <Stack.Screen name="PersonalDataSettingScreen" component={PersonalDataSettingScreen}
+      options={{
+        title: 'Personal Data',
+        headerTitleAlign: 'center',
+      }}
+      />
+      <Stack.Screen name="SkillSettingScreen" component={SkillSettingScreen}
+      options={{
+        title: 'Select a Skill',
+        headerTitleAlign: 'center',
+      }}
+      />
+    </Stack.Navigator>
   );
 };
 
@@ -126,7 +157,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 25,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: '#000', // 颜色调整，确保能在背景上看清楚
     alignSelf: 'flex-start',
     marginBottom: 15,
   },
@@ -138,20 +169,10 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   button: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 25,
+    backgroundColor: '#9999ee',
+    padding: 10,
+    borderRadius: 5,
     alignItems: 'center',
-    marginVertical: 10,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 18,
-  },
-  label: {
-    fontSize: 18,
-    marginBottom: 6,
-    color: colors.text,
   },
 });
 
