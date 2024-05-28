@@ -229,12 +229,13 @@ const ProfileScreen = ({ navigation }) => {
   function PostScreen() {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={{color: 'grey', fontSize: 20}}>
-          Start sharing posts
-        </Text>
-        <Text style={{color: 'grey', fontSize: 20}}>
-          Once you do, the posts will show up here.
-        </Text>
+      <Image source={require("../../assets/icons/camera.png")} style={{height: 50, width: 60, tintColor: 'grey', margin: 10}}></Image>
+      <Text style={{color: 'grey', fontSize: 20}}>
+        Start sharing posts
+      </Text>
+      <Text style={{color: 'grey', fontSize: 20, width: "80%", textAlign: "center"}}>
+        Once you do, the posts will show up here.
+      </Text>
       </View>
     );
   }
