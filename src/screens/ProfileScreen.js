@@ -10,6 +10,9 @@ import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import colors from '../../assets/colors/colors';
+import { TouchableHighlight } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { AccountSettingScreen } from './ProfileSettingScreen';
 
 const ProfileScreen = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -264,14 +267,20 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
         
         <View style={styles.profileContainer}>
+          <GestureHandlerRootView>
+          <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('AccountSettingScreen')}>
           <Image
             source={require('../../assets/icons/defaultUserImage.png') }  
             style={styles.profileImage}
           />
+          </TouchableHighlight>
+          </GestureHandlerRootView>
+          
           <Text style={styles.profileName}>{currentUser.displayName || 'Someone Awesome'}</Text>
 
           <Text style={styles.bio}>{currentUser.bio || 'This person is lazy, left no description..'}</Text>
         </View>
+        
 
         <TouchableOpacity style={styles.setting} onPress={() => navigation.navigate('ProfileSettingScreen')}>
           <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.icon} />
@@ -426,7 +435,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 100,
     borderColor: 'blue',
     borderWidth: 2,
   },

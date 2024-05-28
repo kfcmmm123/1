@@ -4,7 +4,8 @@ import { View, TextInput, Button, StyleSheet, Text, Alert, TouchableOpacity, Scr
 
 const Stack = createStackNavigator();
 
-const AccountSettingScreen = () => {
+// 以下是一个独立的 sub screen: profile settings -> account settings
+const AccountSettingScreen = ({navigation}) => {
 
   const [profileData, setProfileData] = useState({
     displayName: '',
@@ -38,12 +39,17 @@ const AccountSettingScreen = () => {
         value={profileData.bio}
         onChangeText={(text) => setProfileData({ ...profileData, bio: text })}
       />
-      <Button title="Save" onPress={saveProfileData} />
-      <Button title="Sign Out" onPress={handleSignOut} />
+      <TouchableOpacity style={styles.button} onPress={saveProfileData}>
+        <Text>Save Changes</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+        <Text>Sign Out</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
+// 以下是又一个独立的 sub screen: profile settings -> personal data settings
 const PersonalDataSettingScreen = () => {
 
   const [profileData, setProfileData] = useState({
@@ -93,6 +99,7 @@ const PersonalDataSettingScreen = () => {
   );
 };
 
+// 以下是又一个独立的 sub screen: profile settings -> skill settings
 const SkillSettingScreen = () => {
   return (
     <View style={styles.container}>
@@ -101,18 +108,19 @@ const SkillSettingScreen = () => {
   );
 };
 
+// 以下是一个 stack navigator，包含了上面的三个 sub screens
 const ProfileSettingsScreen = ({ navigation }) => {
 
   function ProfileHomeScreen() {
     return (
       <ScrollView style={styles.container}>
-        <TouchableOpacity onPress={() => navigation.navigate('AccountSettingScreen')}>
+        <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('AccountSettingScreen')}>
           <Text style={styles.sectionTitle}>Account Settings</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('PersonalDataSettingScreen')}>
+        <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('PersonalDataSettingScreen')}>
           <Text style={styles.sectionTitle}>Personal Data Settings</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('SkillSettingScreen')}>
+        <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('SkillSettingScreen')}>
           <Text style={styles.sectionTitle}>Skill Settings</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -150,15 +158,22 @@ const ProfileSettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
     backgroundColor: '#fff',
   },
+  tabs: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    padding: 10,
+  },
   sectionTitle: {
-    fontSize: 25,
-    fontWeight: 'bold',
+    fontSize: 20 ,
+    fontWeight: 'normal',
     color: '#000', // 颜色调整，确保能在背景上看清楚
     alignSelf: 'flex-start',
-    marginBottom: 15,
+    marginBottom: 3,
   },
   input: {
     width: '100%',
@@ -170,9 +185,11 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#9999ee',
     padding: 10,
-    borderRadius: 5,
+    margin: 10,
+    borderRadius: 15,
     alignItems: 'center',
   },
 });
 
 export default ProfileSettingsScreen;
+export { AccountSettingScreen, PersonalDataSettingScreen, SkillSettingScreen };
