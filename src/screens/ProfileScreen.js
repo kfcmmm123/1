@@ -337,7 +337,6 @@ const ProfileScreen = ({ navigation }) => {
                 style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
               />
             )
-          
           }}
           />
         </Tab.Navigator>
