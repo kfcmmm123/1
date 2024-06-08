@@ -21,14 +21,12 @@ import SignUpScreen from './src/screens/SignUpScreen';
 import UserInfoScreen from './src/screens/UserInfoScreen';
 import UserInterestsScreen from './src/screens/UserInterestsScreen';
 import EditInterestScreen from './src/screens/EditInterestScreen';
-
 import colors from './assets/colors/colors';
-
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialBottomTabNavigator();
 
 // Define a Stack Navigator for the Mail tab
 const MailStack = createNativeStackNavigator();
@@ -55,8 +53,8 @@ const TabNavigator = () => {
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.secondary,
-        headerShown: false,
-        tabBarShowLabel: false,
+        // headerShown: false,
+        // tabBarShowLabel: false,
         tabBarIcon: ({ focused, color, size }) => {
           let icon;
           switch (route.name) {
