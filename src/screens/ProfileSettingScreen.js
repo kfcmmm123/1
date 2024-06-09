@@ -1,144 +1,21 @@
 import React, { useState, useCallback } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, TextInput, Button, StyleSheet, Text, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import AccountSettingScreen from './settings/AccountSettingScreen';
+import PersonalDataSettingScreen from './settings/PersonalDataSettingScreen';
+import SkillSettingScreen from './settings/SkillSettingScreen';
 
 const Stack = createStackNavigator();
 
 // 以下是一个独立的 sub screen: profile settings -> account settings
-const AccountSettingScreen = ({navigation}) => {
 
-  const [profileData, setProfileData] = useState({
-    displayName: '',
-    bio: '',
-  });
-
-  const saveProfileData = async () => {
-    // 保存数据的逻辑
-    console.log('Data saved:', profileData);
-    navigation.navigate('Profile');
-  };
-
-  const handleSignOut = async () => {
-    // 登出逻辑
-    console.log('User signed out');
-    navigation.navigate('Profile');
-  };
-
-  return (
-    <View style={styles.container}>
-      <Text>Profile Settings</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Display Name"
-        value={profileData.displayName}
-        onChangeText={(text) => setProfileData({ ...profileData, displayName: text })}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Bio"
-        value={profileData.bio}
-        onChangeText={(text) => setProfileData({ ...profileData, bio: text })}
-      />
-      <TouchableOpacity style={styles.button} onPress={saveProfileData}>
-        <Text>Save Changes</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
-        <Text>Sign Out</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
 
 // 以下是又一个独立的 sub screen: profile settings -> personal data settings
-const PersonalDataSettingScreen = () => {
 
-  const [profileData, setProfileData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    birthday: '',
-  });
-
-  return (
-    <View style={styles.container}>
-      <Text>First Name</Text>
-      <TextInput
-        style={styles.input}
-        placeholder='First Name'
-        value={profileData.firstName}
-      />
-      <Text>Last Name</Text>
-      <TextInput
-        style={styles.input}
-        placeholder='Last Name'
-        value={profileData.lastName}
-      />
-      <Text>Email</Text>
-      <TextInput
-        style={styles.input}
-        placeholder='Email'
-        value={profileData.email}
-      />
-      <Text>Phone Number</Text>
-      <TextInput
-        style={styles.input}
-        placeholder='Phone Number'
-        value={profileData.phoneNumber}
-      />
-      <Text>Birthday</Text>
-      <TextInput
-        style={styles.input}
-        placeholder='Birthday'
-        value={profileData.birthday}
-      />
-      <TouchableOpacity style={styles.button} onPress={() => {}}>
-        <Text>Save Changes</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
 
 // 以下是又一个独立的 sub screen: profile settings -> skill settings
 
-const SkillButton = ({ skill, selected, onPress }) => {
-  return (
-    <TouchableOpacity
-      style={{
-        backgroundColor: selected ? '#9999ee' : '#ddd',
-        padding: 10,
-        margin: 10,
-        borderRadius: 15,
-        alignItems: 'center',
-      }}
-      onPress={onPress}
-    >
-      <Text>{skill}</Text>
-    </TouchableOpacity>
-  );
-};
 
-const skills = ['React', 'Vue', 'Angular', 'Node.js', 'Python', 'Java', 'C++', 'C#', 'Ruby', 'PHP', 'Swift', 'Kotlin', 'Go', 'Rust', 'Dart'];
-
-const SkillSettingScreen = () => {
-  return (
-    <View style={styles.container}>
-      <Text>Select your skill so that we can get better jobs for you.</Text>
-
-      <ScrollView>
-        <View style={{flexDirection: 'row' , flexWrap: 'wrap', justifyContent: 'center' }}>
-        {skills.map((skill) => (
-          <SkillButton key={skill} skill={skill} selected={false} onPress={() => {}} />
-        ))}
-        </View>
-      </ScrollView>
-
-      <TouchableOpacity style={styles.button} onPress={() => {}}>
-        <Text>Save Changes</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
 
 // 以下是一个 stack navigator，包含了上面的三个 sub screens
 const ProfileSettingsScreen = ({ navigation }) => {
