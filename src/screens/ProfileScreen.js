@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, Button, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, Button, Image, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import { auth, db } from '../api/firebaseConfig';
 import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
@@ -10,192 +10,113 @@ import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import colors from '../../assets/colors/colors';
+
+import NotificationBanner from '../components/NotificationBanner'; // Adjust the path as necessary
+
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AccountSettingScreen } from './ProfileSettingScreen';
 
 const ProfileScreen = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const isMounted = useRef(true);
+  const firstLoad = useRef(true);
+  const [bannerMessage, setBannerMessage] = useState('');
+  const [bannerType, setBannerType] = useState('success');
 
   useFocusEffect(
     useCallback(() => {
-        const fetchUserData = async () => {
-            const storedUserData = await AsyncStorage.getItem('@user_data');
-            if (storedUserData) {
-                const userData = JSON.parse(storedUserData);
-                setCurrentUser(userData);
-            } else {
-                // Optionally fetch from Firestore if needed or handle user not found
-            }
-        };
-        fetchUserData();
+      const showBannerIfNeeded = async () => {
+        const bannerToShow = await AsyncStorage.getItem('bannerMessage');
+        if (bannerToShow) {
+          setBannerMessage(bannerToShow);
+          setBannerType(await AsyncStorage.getItem('bannerType') || 'success');
+          await AsyncStorage.removeItem('bannerMessage');
+          await AsyncStorage.removeItem('bannerType');
+        }
+      };
+
+      showBannerIfNeeded();
     }, [])
   );
 
   useFocusEffect(
     useCallback(() => {
-        const checkUser = async () => {
-            try {
-                const jsonValue = await AsyncStorage.getItem('@user_data');
-                const userData = jsonValue != null ? JSON.parse(jsonValue) : null;
-                if (userData) {
-                    setCurrentUser(userData);
-                } else {
-                    setCurrentUser(null);
-                }
-            } catch (e) {
-                console.error('Failed to load user data:', e);
-                Alert.alert('Error', 'Failed to load data');
-            }
-        };
-
-        checkUser();
+      const resetStateIfNeeded = async () => {
+        const shouldReset = await AsyncStorage.getItem('resetFirstLoad');
+        if (shouldReset === 'true') {
+          firstLoad.current = true;
+          await AsyncStorage.removeItem('resetFirstLoad');
+        }
+  
+        if (firstLoad.current) {
+          setLoading(true);
+          fetchUserData();
+          firstLoad.current = false;
+        }
+      };
+  
+      resetStateIfNeeded();
     }, [])
   );
 
   useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const jsonValue = await AsyncStorage.getItem('@user_data');
-        return jsonValue != null ? JSON.parse(jsonValue) : null;
-      } catch (e) {
-        console.error('Failed to load user data', e);
-        return null;
-      }
-    };
-
-    const checkUserAuthentication = async () => {
-      const storedUserData = await loadUserData();
-      if (storedUserData) {
-        setCurrentUser(storedUserData);
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      if (user) {
+        fetchUserData();
       } else {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user && user.emailVerified) {
-            // Fetch and set user data here
-            setLoading(false);
-          } else {
-            setCurrentUser(null);
-            setLoading(false);
-          }
-        });
-        return () => {
-          unsubscribe();
-          isMounted.current = false;
-        };
+        setCurrentUser(null); // Ensure user state is reset
+        setLoading(false); // Stop loading state
+        AsyncStorage.removeItem('@user_data'); // Optionally clear user data
       }
-    };
-
-    checkUserAuthentication();
+    });
+    
+    return () => unsubscribe(); // Correctly unsubscribe on component unmount
   }, []);
 
-  const handleSignOut = async () => {
+  useFocusEffect(
+    useCallback(() => {
+      const checkBanner = async () => {
+        const message = await AsyncStorage.getItem('bannerMessage');
+        const type = await AsyncStorage.getItem('bannerType');
+        if (message && type) {
+          setBannerMessage(message);
+          setBannerType(type);
+          await AsyncStorage.removeItem('bannerMessage');
+          await AsyncStorage.removeItem('bannerType');
+        }
+      };
+
+      checkBanner();
+    }, [])
+  );
+
+  const fetchUserData = async () => {
     try {
-      await signOut(auth);
-      await AsyncStorage.removeItem('@user_data'); // Clear stored user data
-      setCurrentUser(null);
-      navigation.replace('SignInScreen'); // Replace the current screen with the sign-in screen
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          setCurrentUser(userData);
+          await AsyncStorage.setItem('@user_data', JSON.stringify(userData));
+        } else {
+          console.log("No user data available");
+        }
+      }
     } catch (error) {
-      console.error('Error signing out: ', error);
-      alert('Failed to sign out.');
+      console.error("Failed to fetch user data:", error);
     } finally {
       setLoading(false);
     }
   };
-  
 
-  const getUserProfile = async () => {
-    const user = auth.currentUser;
-    if (user) {
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists() && isMounted.current) {
-        const userData = userDoc.data();
-        setCurrentUser(userData);
-        await saveUserData(userData);
-      }
-    }
-    if (isMounted.current) {
-      setLoading(false);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      const timeout = setTimeout(() => {
-        setLoading(false);
-        console.error('Timeout: Failed to get user profile');
-      }, 5000);
-      getUserProfile()
-        .then(() => clearTimeout(timeout))
-        .catch((error) => {
-          clearTimeout(timeout);
-          console.error(error);
-        });
-    }, [])
-  );
-
-  const saveUserData = async (userData) => {
-    try {
-      const jsonValue = JSON.stringify(userData);
-      await AsyncStorage.setItem('@user_data', jsonValue);
-    } catch (e) {
-      console.error('Failed to save user data', e);
-    }
-  };
-
-  const loadUserData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('@user_data');
-      return jsonValue != null ? JSON.parse(jsonValue) : null;
-    } catch (e) {
-      console.error('Failed to load user data', e);
-      return null;
-    }
-  };
-
-  const pickImage = async () => {
-    const result = await launchImageLibrary({ mediaType: 'photo', quality: 1 });
-
-    if (result.didCancel) {
-      console.log('User cancelled image picker');
-    } else if (result.errorMessage) {
-      console.log('ImagePicker Error: ', result.errorMessage);
-    } else if (result.assets && result.assets.length > 0) {
-      const source = { uri: result.assets[0].uri };
-      uploadImage(source.uri);
-    }
-  };
-
-  const uploadImage = async (uri) => {
-    const uploadUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-    const filename = uploadUri.substring(uploadUri.lastIndexOf('/') + 1);
-    const storageRef = storage().ref(`profile_pictures/${filename}`);
-
-    try {
-      await storageRef.putFile(uploadUri);
-      const downloadURL = await storageRef.getDownloadURL();
-
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { photoURL: downloadURL });
-        console.log('Photo URL updated!');
-
-        // Update Firestore user document
-        const userDocRef = doc(db, 'users', auth.currentUser.uid);
-        await setDoc(userDocRef, { photoURL: downloadURL }, { merge: true });
-
-        // Update local state and AsyncStorage
-        const updatedUserData = { ...currentUser, photoURL: downloadURL };
-        setCurrentUser(updatedUserData);
-        await saveUserData(updatedUserData);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchUserData().finally(() => setRefreshing(false));
+  }, []);
 
   if (loading) {
     return (
@@ -220,6 +141,8 @@ const ProfileScreen = ({ navigation }) => {
         <TouchableOpacity style={[styles.button, styles.signInButton]} onPress={() => navigation.navigate('SignInScreen')}>
           <Text style={styles.signInButtonText}>Sign In</Text>
         </TouchableOpacity>
+        {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
+
       </View>
     );
   }
@@ -229,13 +152,13 @@ const ProfileScreen = ({ navigation }) => {
   function PostScreen() {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Image source={require("../../assets/icons/camera.png")} style={{height: 50, width: 60, tintColor: 'grey', margin: 10}}></Image>
-      <Text style={{color: 'grey', fontSize: 20}}>
-        Start sharing posts
-      </Text>
-      <Text style={{color: 'grey', fontSize: 20, width: "80%", textAlign: "center"}}>
-        Once you do, the posts will show up here.
-      </Text>
+        <Image source={require("../../assets/icons/camera.png")} style={{height: 50, width: 60, tintColor: 'grey', margin: 10}}></Image>
+        <Text style={{color: 'grey', fontSize: 20}}>
+          Start sharing posts
+        </Text>
+        <Text style={{color: 'grey', fontSize: 20, width: "80%", textAlign: "center"}}>
+          Once you do, the posts will show up here.
+        </Text>
       </View>
     );
   }
@@ -261,7 +184,13 @@ const ProfileScreen = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      contentContainerStyle={{ flexGrow: 1 }}  // Ensures the ScrollView content fills the space
+    >
+      {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
+
       <View style={styles.about_us_profile_setting}>
         <TouchableOpacity style={styles.aboutUs} onPress={() => navigation.navigate('AboutUsScreen')}>
           <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
@@ -308,7 +237,15 @@ const ProfileScreen = ({ navigation }) => {
       </View>
       
       <View style={styles.utilityContainer}>
-        <Tab.Navigator style={styles.tab} tabBarPosition='top'>
+        <Tab.Navigator
+          style={styles.tab}
+          tabBarPosition='top'
+          screenOptions={{
+            tabBarLabelStyle: { fontSize: 12 },  // Optional: Adjust tab label styles
+            tabBarStyle: { backgroundColor: 'white' },
+            tabBarIndicatorStyle: { backgroundColor: colors.primary }
+          }}
+        >
           <Tab.Screen name="Posts" component={PostScreen} options={{
             tabBarShowLabel: false,
             tabBarIcon: ({ focused }) => (
@@ -341,11 +278,15 @@ const ProfileScreen = ({ navigation }) => {
           />
         </Tab.Navigator>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -430,7 +371,7 @@ const styles = StyleSheet.create({
   profileContainer: {
     position: 'relative',
     alignItems: 'center',
-    marginTop: 0,
+    marginTop: 20,
   },
   profileImage: {
     width: 100,

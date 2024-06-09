@@ -35,14 +35,16 @@ const SignInScreen = ({ navigation, route }) => {
           };
           // Store the enhanced user data in AsyncStorage
           await AsyncStorage.setItem('@user_data', JSON.stringify(storedData));
-          navigation.navigate(storedData.isNewUser ? 'UserInfoScreen' : 'Homepage');
+          await AsyncStorage.setItem('bannerMessage', 'Signed in successfully!');
+          await AsyncStorage.setItem('bannerType', 'success');
+          navigation.navigate(storedData.isNewUser ? 'UserInfoScreen' : 'Profile');
         } else {
           console.error("No such user!");
           Alert.alert('Error', 'No user data available.');
         }
       } else {
-        Alert.alert('Login Failed', 'Please verify your email before signing in.');
-      }
+        await AsyncStorage.setItem('bannerMessage', 'Failed to update profile.');
+        await AsyncStorage.setItem('bannerType', 'error');      }
     } catch (error) {
       // Error handling based on error.code
       switch (error.code) {
