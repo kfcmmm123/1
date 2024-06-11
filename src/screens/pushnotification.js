@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 import { Alert } from 'react-native';
 
 const handleNotification = (notification) => {
-  Alert.alert(
-    'Received Notification',
-    `Title: ${notification.request.content.title}\nBody: ${notification.request.content.body}`
-  );
+  // Alert.alert(
+  //   'Received Notification',
+  //   `Title: ${notification.request.content.title}\nBody: ${notification.request.content.body}`
+  // );
 };
 
 const usePushNotification = () => {
