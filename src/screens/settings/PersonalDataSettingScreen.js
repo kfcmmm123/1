@@ -9,10 +9,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 const PersonalDataSettingScreen = ({ route, navigation }) => {
   const { userInfo } = route.params;
   const [loading, setLoading] = useState(true);
-  
+
   // Convert birthday to a Date object safely
   const initialBirthday = userInfo.birthday ? new Date(userInfo.birthday) : new Date();
-  
+
   const [firstName, setFirstName] = useState(userInfo.firstName || '');
   const [lastName, setLastName] = useState(userInfo.lastName || '');
   const [email, setEmail] = useState(userInfo.email || '');
@@ -177,7 +177,15 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
       </Modal>
 
       <Text style={styles.city}>City: </Text>
-      <TouchableOpacity onPress={() => setCityModalVisible(true)} style={styles.input}>
+      <TouchableOpacity
+        onPress={() => {
+          if (selectedCountry) {
+            setCityModalVisible(true);
+          }
+        }}
+        style={[styles.input, !selectedCountry && { backgroundColor: '#f0f0f0' }]}
+        disabled={!selectedCountry}
+      >
         <Text>{selectedCity || 'Select City'}</Text>
       </TouchableOpacity>
       <Modal visible={cityModalVisible} transparent={true} animationType="slide">
@@ -201,7 +209,7 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
           <Button title="Close" onPress={() => setCityModalVisible(false)} />
         </View>
       </Modal>
-      
+
       <TouchableOpacity style={styles.button} onPress={savePersonalData}>
         <Text style={styles.buttonText}>Save Changes</Text>
       </TouchableOpacity>
@@ -273,9 +281,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: 'white'
   },
-  city:{
+  city: {
     color: '#555',
     marginTop: 5,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
