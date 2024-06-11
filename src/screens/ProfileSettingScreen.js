@@ -9,6 +9,7 @@ import { auth, db } from '../api/firebaseConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '../../assets/colors/colors';
+import EditInterestScreen from './settings/EditInterestScreen';
 
 const Stack = createStackNavigator();
 
@@ -57,7 +58,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
     try {
       await signOut(auth);
       await AsyncStorage.removeItem('@user_data'); // Clear stored user data
-      await AsyncStorage.setItem('resetProfileScreen', 'true'); // Set a flag when signing out
+      await AsyncStorage.setItem('resetFirstLoad', 'true');
       await AsyncStorage.setItem('bannerMessage', 'You have signed out!');
       await AsyncStorage.setItem('bannerType', 'success');      
       navigation.navigate('Profile');
@@ -110,6 +111,12 @@ const ProfileSettingsScreen = ({ navigation }) => {
       <Stack.Screen name="SkillSettingScreen" component={SkillSettingScreen}
       options={{
         title: 'Select a Skill',
+        headerTitleAlign: 'center',
+      }}
+      />
+      <Stack.Screen name="EditInterestScreen" component={EditInterestScreen}
+      options={{
+        title: 'Select your interests',
         headerTitleAlign: 'center',
       }}
       />

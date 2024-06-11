@@ -233,6 +233,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     marginVertical: 10,
+    marginBottom: 45,
   },
   buttonText: {
     color: '#ffffff',
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white'
   },
   city:{
-    color: 'grey',
+    color: '#555',
     marginTop: 5,
   },
 });

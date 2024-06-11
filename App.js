@@ -20,13 +20,14 @@ import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import UserInfoScreen from './src/screens/UserInfoScreen';
 import UserInterestsScreen from './src/screens/UserInterestsScreen';
-import EditInterestScreen from './src/screens/EditInterestScreen';
+
 import colors from './assets/colors/colors';
+
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const Stack = createNativeStackNavigator();
-const Tab = createMaterialBottomTabNavigator();
+const Tab = createBottomTabNavigator();
 
 // Define a Stack Navigator for the Mail tab
 const MailStack = createNativeStackNavigator();
@@ -53,8 +54,8 @@ const TabNavigator = () => {
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.secondary,
-        // headerShown: false,
-        // tabBarShowLabel: false,
+        headerShown: false,
+        tabBarShowLabel: false,
         tabBarIcon: ({ focused, color, size }) => {
           let icon;
           switch (route.name) {
@@ -182,14 +183,6 @@ export default function App() {
               options={{
                 headerShown: true,
                 title: 'Interests'
-              }}
-            />
-            <RootStack.Screen
-              name="EditInterestScreen"
-              component={EditInterestScreen}
-              options={{
-                headerShown: true,
-                title: 'Edit your interests'
               }}
             />
           </RootStack.Navigator>
