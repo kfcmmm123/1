@@ -5,7 +5,7 @@ import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { launchImageLibrary } from 'react-native-image-picker';
-import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -65,7 +65,7 @@ const ProfileScreen = ({ navigation }) => {
             await AsyncStorage.removeItem('resetFirstLoad');
           }
         }
-  
+
         // Manage the banner
         const bannerToShow = await AsyncStorage.getItem('bannerMessage');
         const bannerTypeToShow = await AsyncStorage.getItem('bannerType');
@@ -79,11 +79,11 @@ const ProfileScreen = ({ navigation }) => {
           }, 3000); // Duration after which the banner should disappear
         }
       };
-  
+
       initiateDataFetch();
     }, [])
   );
-  
+
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -123,7 +123,7 @@ const ProfileScreen = ({ navigation }) => {
 
   function BookmarkScreen() {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>
           Bookmark Screen
         </Text>
@@ -133,7 +133,7 @@ const ProfileScreen = ({ navigation }) => {
 
   function ConnectionScreen() {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>
           Component Screen
         </Text>
@@ -153,28 +153,28 @@ const ProfileScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.aboutUs} onPress={() => navigation.navigate('AboutUsScreen')}>
           <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
         </TouchableOpacity>
-        
+
         <View style={styles.profileContainer}>
           <GestureHandlerRootView>
-          <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('AccountSettingScreen')}>
-          <Image
-            source={require('../../assets/icons/defaultUserImage.png') }  
-            style={styles.profileImage}
-          />
-          </TouchableHighlight>
+            <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('AccountSettingScreen')}>
+              <Image
+                source={require('../../assets/profile-pic.png')}
+                style={styles.profileImage}
+              />
+            </TouchableHighlight>
           </GestureHandlerRootView>
-          
+
           <Text style={styles.profileName}>{currentUser.displayName || 'Someone Awesome'}</Text>
 
           <Text style={styles.bio}>{currentUser.bio || 'This person is lazy, left no description..'}</Text>
         </View>
-        
+
 
         <TouchableOpacity style={styles.setting} onPress={() => navigation.navigate('ProfileSettingScreen')}>
-          <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.icon} />
+          <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.SettingIcon} />
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
@@ -193,7 +193,7 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.statLabel}>Group</Text>
         </View>
       </View>
-      
+
       <View style={styles.utilityContainer}>
         <Tab.Navigator
           style={styles.tab}
@@ -212,7 +212,7 @@ const ProfileScreen = ({ navigation }) => {
                 style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
               />
             )
-          }} 
+          }}
           />
           <Tab.Screen name="Bookmarks" component={BookmarkScreen} options={{
             tabBarShowLabel: false,
@@ -223,7 +223,7 @@ const ProfileScreen = ({ navigation }) => {
               />
             )
           }}
-            />
+          />
           <Tab.Screen name="Connections" component={ConnectionScreen} options={{
             tabBarShowLabel: false,
             tabBarIcon: ({ focused }) => (
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 30,
   },
-  title:{
+  title: {
     fontSize: 24,
     color: 'black',
     textAlign: 'center',
@@ -348,9 +348,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  bio:{
+  bio: {
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 20,
+    marginTop: 10,
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
@@ -362,7 +363,7 @@ const styles = StyleSheet.create({
   },
   utilityContainer: {
     flex: 1,
-    width: '100%',    
+    width: '100%',
   },
   tab: {
     width: '100%',
@@ -380,6 +381,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   icon: {
+    width: 60,
+    height: 60,
+    marginBottom: 5,
+  },
+  SettingIcon: {
     width: 60,
     height: 60,
     marginBottom: 5,
