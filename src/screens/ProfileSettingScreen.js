@@ -12,16 +12,6 @@ import colors from '../../assets/colors/colors';
 
 const Stack = createStackNavigator();
 
-// 以下是一个独立的 sub screen: profile settings -> account settings
-
-
-// 以下是又一个独立的 sub screen: profile settings -> personal data settings
-
-
-// 以下是又一个独立的 sub screen: profile settings -> skill settings
-
-
-
 // 以下是一个 stack navigator，包含了上面的三个 sub screens
 const ProfileSettingsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
