@@ -37,6 +37,7 @@ const SignInScreen = ({ navigation, route }) => {
           await AsyncStorage.setItem('@user_data', JSON.stringify(storedData));
           await AsyncStorage.setItem('bannerMessage', 'Signed in successfully!');
           await AsyncStorage.setItem('bannerType', 'success');
+          await AsyncStorage.setItem('resetFirstLoad', 'true');
           navigation.navigate(storedData.isNewUser ? 'UserInfoScreen' : 'Profile');
         } else {
           console.error("No such user!");

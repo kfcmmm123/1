@@ -21,7 +21,7 @@ const MailScreen = ({ navigation }) => {
     if (!isSelectMode) {
       return null;
     }
-  
+
     return (
       <TouchableOpacity onPress={onPress} style={styles.checkboxContainer}>
         <View style={[styles.checkbox, checked && styles.checked]}>
@@ -32,9 +32,9 @@ const MailScreen = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
-  
-  
-  
+
+
+
 
   useEffect(() => {
     const registerForPushNotifications = async () => {
@@ -112,79 +112,79 @@ const MailScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-       <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')}>
-            <Image
-                source={require('../../assets/adaptive-icon-cropped.png')}
-                style={styles.icon}
-            />
-            </TouchableOpacity>
-            <Text style = { styles.header }>Mail</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')}>
+        <Image
+          source={require('../../assets/adaptive-icon-cropped.png')}
+          style={styles.icon}
+        />
+      </TouchableOpacity>
+      <Text style={styles.header}>Mail</Text>
       <MailSearchBar />
       {messages.length > 0 ? (
         <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item, index }) => (
-          <>
-            <TouchableOpacity
-  onPress={() => {
-    if (isSelectMode) {
-      selectMessage(item.id);
-    } else {
-      navigateToIndividualMail(item);
-    }
-  }}
->
-  <View
-    style={[
-      styles.messageItem,
-      selectedMessages.includes(item.id) && styles.selectedMessage,
-    ]}
-  >
-    {isSelectMode && (
-    <CheckBox
-    checked={selectedMessages.includes(item.id)}
-    onPress={() => selectMessage(item.id)}
-  />
+          data={messages}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item, index }) => (
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  if (isSelectMode) {
+                    selectMessage(item.id);
+                  } else {
+                    navigateToIndividualMail(item);
+                  }
+                }}
+              >
+                <View
+                  style={[
+                    styles.messageItem,
+                    selectedMessages.includes(item.id) && styles.selectedMessage,
+                  ]}
+                >
+                  {isSelectMode && (
+                    <CheckBox
+                      checked={selectedMessages.includes(item.id)}
+                      onPress={() => selectMessage(item.id)}
+                    />
 
-  )}
-                <TouchableOpacity onPress={() => navigateToIndividualMail(item)}>
-                  <Image source={profileImages[item.id]} style={styles.profileImage} />
-                </TouchableOpacity>
-                <View style={styles.messageContent}>
-                  <Text style={styles.messageText}>{item.text}</Text>
-                </View>
-                <TouchableOpacity onPress={() => toggleStar(item.id)} style={styles.starIcon}>
-                  {isMessageStarred(item.id) ? (
-                    <MaterialIcons name="star" size={18} color="gold" />
-                  ) : (
-                    <MaterialIcons name="star-outline" size={18} color="gray" />
                   )}
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-            {index < messages.length - 1 && <View style={styles.divider} />}
-          </>
-        )}
-      />
-    ) : (
-      <View style={styles.noMessageContainer}>
-        <Text style={styles.noMessageText}>No messages available</Text>
-      </View>
-    )}
-    {messages.length > 0 && (
-      <View style={styles.topRightIcons} elevation={5}>
-        <TouchableOpacity onPress={handleDelete}>
-          <Image source={require('../../assets/trash.png')} style={styles.topRightIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={toggleSelectMenu}>
-          <Image source={require('../../assets/menuu.png')} style={styles.topRightIcon} />
-        </TouchableOpacity>
-      </View>
-    )}
-    <StatusBar style="auto" />
-  </View>
-);
+                  <TouchableOpacity onPress={() => navigateToIndividualMail(item)}>
+                    <Image source={profileImages[item.id]} style={styles.profileImage} />
+                  </TouchableOpacity>
+                  <View style={styles.messageContent}>
+                    <Text style={styles.messageText}>{item.text}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => toggleStar(item.id)} style={styles.starIcon}>
+                    {isMessageStarred(item.id) ? (
+                      <MaterialIcons name="star" size={18} color="gold" />
+                    ) : (
+                      <MaterialIcons name="star-outline" size={18} color="gray" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+              {index < messages.length - 1 && <View style={styles.divider} />}
+            </>
+          )}
+        />
+      ) : (
+        <View style={styles.noMessageContainer}>
+          <Text style={styles.noMessageText}>No messages available</Text>
+        </View>
+      )}
+      {messages.length > 0 && (
+        <View style={styles.topRightIcons} elevation={5}>
+          <TouchableOpacity onPress={handleDelete}>
+            <Image source={require('../../assets/trash.png')} style={styles.topRightIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleSelectMenu}>
+            <Image source={require('../../assets/menuu.png')} style={styles.topRightIcon} />
+          </TouchableOpacity>
+        </View>
+      )}
+      <StatusBar style="auto" />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -254,8 +254,8 @@ const styles = StyleSheet.create({
   topRightIcons: {
     position: 'absolute',
     top: 20,
-    marginTop:40,
-    marginLeft:20,
+    marginTop: 40,
+    marginLeft: 20,
     right: 20,
     flexDirection: 'row',
     alignSelf: 'flex-end',
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   divider: {
-    height:  0.8,
+    height: 0.8,
     backgroundColor: 'lightgray',
     marginHorizontal: 0,
   },

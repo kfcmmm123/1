@@ -5,13 +5,14 @@ import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { launchImageLibrary } from 'react-native-image-picker';
-import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import colors from '../../assets/colors/colors';
 
 import NotificationBanner from '../components/NotificationBanner'; // Adjust the path as necessary
+import PostScreen from './profileScreens/PostScreen';
 
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -25,93 +26,64 @@ const ProfileScreen = ({ navigation }) => {
   const [bannerMessage, setBannerMessage] = useState('');
   const [bannerType, setBannerType] = useState('success');
 
-  useFocusEffect(
-    useCallback(() => {
-      const showBannerIfNeeded = async () => {
-        const bannerToShow = await AsyncStorage.getItem('bannerMessage');
-        if (bannerToShow) {
-          setBannerMessage(bannerToShow);
-          setBannerType(await AsyncStorage.getItem('bannerType') || 'success');
-          await AsyncStorage.removeItem('bannerMessage');
-          await AsyncStorage.removeItem('bannerType');
-        }
-      };
-
-      showBannerIfNeeded();
-    }, [])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      const resetStateIfNeeded = async () => {
-        const shouldReset = await AsyncStorage.getItem('resetFirstLoad');
-        if (shouldReset === 'true') {
-          firstLoad.current = true;
-          await AsyncStorage.removeItem('resetFirstLoad');
-        }
-  
-        if (firstLoad.current) {
-          setLoading(true);
-          fetchUserData();
-          firstLoad.current = false;
-        }
-      };
-  
-      resetStateIfNeeded();
-    }, [])
-  );
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      if (user) {
-        fetchUserData();
-      } else {
-        setCurrentUser(null); // Ensure user state is reset
-        setLoading(false); // Stop loading state
-        AsyncStorage.removeItem('@user_data'); // Optionally clear user data
-      }
-    });
-    
-    return () => unsubscribe(); // Correctly unsubscribe on component unmount
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      const checkBanner = async () => {
-        const message = await AsyncStorage.getItem('bannerMessage');
-        const type = await AsyncStorage.getItem('bannerType');
-        if (message && type) {
-          setBannerMessage(message);
-          setBannerType(type);
-          await AsyncStorage.removeItem('bannerMessage');
-          await AsyncStorage.removeItem('bannerType');
-        }
-      };
-
-      checkBanner();
-    }, [])
-  );
-
   const fetchUserData = async () => {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
-          setCurrentUser(userData);
-          await AsyncStorage.setItem('@user_data', JSON.stringify(userData));
-        } else {
-          console.log("No user data available");
-        }
+    setLoading(true);
+    const user = auth.currentUser;
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        setCurrentUser(docSnap.data());
+        await AsyncStorage.setItem('@user_data', JSON.stringify(docSnap.data()));
+      } else {
+        console.log("No user data available");
       }
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    } finally {
-      setLoading(false);
+    } else {
+      setCurrentUser(null);
     }
+    setLoading(false);
   };
+
+  const checkForUpdates = async () => {
+    const forceUpdate = await AsyncStorage.getItem('resetFirstLoad');
+    if (forceUpdate === 'true') {
+      await AsyncStorage.removeItem('resetFirstLoad');
+      return true;
+    }
+    return false;
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const initiateDataFetch = async () => {
+        // Trigger fetch data only on the first load or if explicitly asked via AsyncStorage flag
+        const shouldReset = await AsyncStorage.getItem('resetFirstLoad');
+        if (firstLoad.current || shouldReset === 'true') {
+          await fetchUserData();
+          firstLoad.current = false;
+          if (shouldReset === 'true') {
+            await AsyncStorage.removeItem('resetFirstLoad');
+          }
+        }
+
+        // Manage the banner
+        const bannerToShow = await AsyncStorage.getItem('bannerMessage');
+        const bannerTypeToShow = await AsyncStorage.getItem('bannerType');
+        if (bannerToShow && bannerTypeToShow) {
+          setBannerMessage(bannerToShow);
+          setBannerType(bannerTypeToShow);
+          await AsyncStorage.removeItem('bannerMessage');
+          await AsyncStorage.removeItem('bannerType');
+          setTimeout(() => {
+            setBannerMessage(''); // Clear banner after showing
+          }, 3000); // Duration after which the banner should disappear
+        }
+      };
+
+      initiateDataFetch();
+    }, [])
+  );
+
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -149,23 +121,9 @@ const ProfileScreen = ({ navigation }) => {
 
   const Tab = createMaterialTopTabNavigator();
 
-  function PostScreen() {
-    return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image source={require("../../assets/icons/camera.png")} style={{height: 50, width: 60, tintColor: 'grey', margin: 10}}></Image>
-        <Text style={{color: 'grey', fontSize: 20}}>
-          Start sharing posts
-        </Text>
-        <Text style={{color: 'grey', fontSize: 20, width: "80%", textAlign: "center"}}>
-          Once you do, the posts will show up here.
-        </Text>
-      </View>
-    );
-  }
-
   function BookmarkScreen() {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>
           Bookmark Screen
         </Text>
@@ -175,7 +133,7 @@ const ProfileScreen = ({ navigation }) => {
 
   function ConnectionScreen() {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>
           Component Screen
         </Text>
@@ -195,28 +153,28 @@ const ProfileScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.aboutUs} onPress={() => navigation.navigate('AboutUsScreen')}>
           <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
         </TouchableOpacity>
-        
+
         <View style={styles.profileContainer}>
           <GestureHandlerRootView>
-          <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('AccountSettingScreen')}>
-          <Image
-            source={require('../../assets/icons/defaultUserImage.png') }  
-            style={styles.profileImage}
-          />
-          </TouchableHighlight>
+            <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('AccountSettingScreen')}>
+              <Image
+                source={require('../../assets/profile-pic.png')}
+                style={styles.profileImage}
+              />
+            </TouchableHighlight>
           </GestureHandlerRootView>
-          
+
           <Text style={styles.profileName}>{currentUser.displayName || 'Someone Awesome'}</Text>
 
           <Text style={styles.bio}>{currentUser.bio || 'This person is lazy, left no description..'}</Text>
         </View>
-        
+
 
         <TouchableOpacity style={styles.setting} onPress={() => navigation.navigate('ProfileSettingScreen')}>
-          <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.icon} />
+          <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.SettingIcon} />
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
@@ -235,7 +193,7 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.statLabel}>Group</Text>
         </View>
       </View>
-      
+
       <View style={styles.utilityContainer}>
         <Tab.Navigator
           style={styles.tab}
@@ -254,7 +212,7 @@ const ProfileScreen = ({ navigation }) => {
                 style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
               />
             )
-          }} 
+          }}
           />
           <Tab.Screen name="Bookmarks" component={BookmarkScreen} options={{
             tabBarShowLabel: false,
@@ -265,7 +223,7 @@ const ProfileScreen = ({ navigation }) => {
               />
             )
           }}
-            />
+          />
           <Tab.Screen name="Connections" component={ConnectionScreen} options={{
             tabBarShowLabel: false,
             tabBarIcon: ({ focused }) => (
@@ -310,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 30,
   },
-  title:{
+  title: {
     fontSize: 24,
     color: 'black',
     textAlign: 'center',
@@ -321,8 +279,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     textAlign: 'center',
-    paddingHorizontal: 5,
-    marginBottom: 5,
+    paddingHorizontal: 30,
+    marginBottom: 20,
+    marginTop: 5,
   },
   button: {
     width: '80%',
@@ -389,9 +348,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  bio:{
+  bio: {
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 20,
+    marginTop: 10,
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
@@ -403,7 +363,7 @@ const styles = StyleSheet.create({
   },
   utilityContainer: {
     flex: 1,
-    width: '100%',    
+    width: '100%',
   },
   tab: {
     width: '100%',
@@ -421,6 +381,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   icon: {
+    width: 60,
+    height: 60,
+    marginBottom: 5,
+  },
+  SettingIcon: {
     width: 60,
     height: 60,
     marginBottom: 5,

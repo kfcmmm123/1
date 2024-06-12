@@ -43,7 +43,13 @@
             "useFrameworks": "static"
           }
         }
-      ]
-    ]
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "00ab2240-c3a4-4974-87cf-2d41f65b9b0e"
+      }
+    }
   }
 }

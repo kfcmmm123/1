@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '../../assets/colors/colors';
 
-const HomepageSettingsScreen = () => {
+const HomepageSettingsScreen = ({navigation}) => {
   const [hours, setHours] = useState('');
 
   const saveHours = async () => {
     try {
       await AsyncStorage.setItem('userHours', hours);
       alert('Hours updated successfully!');
+      navigation.navigate('Homepage');
     } catch (e) {
       alert('Failed to save hours.');
     }
@@ -25,7 +26,9 @@ const HomepageSettingsScreen = () => {
         onChangeText={setHours}
         keyboardType="numeric"
       />
-      <Button title="Save Hours" onPress={saveHours} />
+      <TouchableOpacity style={styles.button} onPress={saveHours}>
+          <Text style={styles.buttonText}>Save hours</Text>
+        </TouchableOpacity>
     </View>
   );
 };
@@ -33,16 +36,16 @@ const HomepageSettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    padding: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
     backgroundColor: '#fff',
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: 'bold',
     color: colors.primary,
     alignSelf: 'flex-start',
-    marginBottom: 15,
+    marginVertical: 15,
   },
   input: {
     width: '100%',
@@ -50,6 +53,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     padding: 10,
+  },
+  button: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 18,
   },
 });
 
