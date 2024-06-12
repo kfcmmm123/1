@@ -40,7 +40,7 @@ const EditInterestScreen = ({ route, navigation }) => {
         try {
             await setDoc(userRef, { ...userInfo, hobbies: selectedHobbies }, { merge: true });
             await AsyncStorage.setItem('selectedHobbies', JSON.stringify(selectedHobbies));
-            await AsyncStorage.setItem('bannerMessage', 'Profile updated successfully!');
+            await AsyncStorage.setItem('bannerMessage', 'Interests updated successfully!');
             await AsyncStorage.setItem('bannerType', 'success');
             await AsyncStorage.setItem('resetFirstLoad', 'true');
             navigation.navigate('Profile');

@@ -13,6 +13,7 @@ import colors from '../../assets/colors/colors';
 
 import NotificationBanner from '../components/NotificationBanner'; // Adjust the path as necessary
 import PostScreen from './profileScreens/PostScreen';
+import BookmarkedScreen from './profileScreens/BookmarkedScreen';
 
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -42,6 +43,22 @@ const ProfileScreen = ({ navigation }) => {
       setCurrentUser(null);
     }
     setLoading(false);
+  };
+
+  const refreshUserData = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        setCurrentUser(docSnap.data());
+        await AsyncStorage.setItem('@user_data', JSON.stringify(docSnap.data()));
+      } else {
+        console.log("No user data available");
+      }
+    } else {
+      setCurrentUser(null);
+    }
   };
 
   const checkForUpdates = async () => {
@@ -87,7 +104,7 @@ const ProfileScreen = ({ navigation }) => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchUserData().finally(() => setRefreshing(false));
+    refreshUserData().finally(() => setRefreshing(false));
   }, []);
 
   if (loading) {
@@ -121,15 +138,15 @@ const ProfileScreen = ({ navigation }) => {
 
   const Tab = createMaterialTopTabNavigator();
 
-  function BookmarkScreen() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>
-          Bookmark Screen
-        </Text>
-      </View>
-    );
-  }
+  // function BookmarkScreen() {
+  //   return (
+  //     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+  //       <Text>
+  //         Bookmark Screen
+  //       </Text>
+  //     </View>
+  //   );
+  // }
 
   function ConnectionScreen() {
     return (
@@ -156,7 +173,7 @@ const ProfileScreen = ({ navigation }) => {
 
         <View style={styles.profileContainer}>
           <GestureHandlerRootView>
-            <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('AccountSettingScreen')}>
+            <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('ProfileSettingScreen')}>
               <Image
                 source={require('../../assets/profile-pic.png')}
                 style={styles.profileImage}
@@ -214,7 +231,7 @@ const ProfileScreen = ({ navigation }) => {
             )
           }}
           />
-          <Tab.Screen name="Bookmarks" component={BookmarkScreen} options={{
+          <Tab.Screen name="Bookmarks" component={BookmarkedScreen} options={{
             tabBarShowLabel: false,
             tabBarIcon: ({ focused }) => (
               <Image
@@ -320,12 +337,12 @@ const styles = StyleSheet.create({
   aboutUs: {
     position: 'absolute',
     top: 0,
-    left: 20,
+    left: 15,
   },
   setting: {
     position: 'absolute',
     top: 0,
-    right: 20,
+    right: 15,
   },
   profileContainer: {
     position: 'relative',

@@ -8,8 +8,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 const PersonalDataSettingScreen = ({ route, navigation }) => {
   const { userInfo } = route.params;
-  const [loading, setLoading] = useState(true);
-
+  
   // Convert birthday to a Date object safely
   const initialBirthday = userInfo.birthday ? new Date(userInfo.birthday) : new Date();
 
@@ -44,11 +43,9 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
             setFilteredCities(initialCountry.cities);
           }
         }
-        setLoading(false);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
-        setLoading(false);
       });
   }, []);
 
@@ -83,7 +80,7 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
       const userDocRef = doc(db, 'users', auth.currentUser.uid);
       await setDoc(userDocRef, { firstName, lastName, email, phone, birthday: formattedBirthday, city: selectedCity, country: selectedCountry }, { merge: true });
       await AsyncStorage.setItem('@user_data', JSON.stringify({ ...userInfo, firstName, lastName, email, phone, birthday: formattedBirthday }));
-      await AsyncStorage.setItem('bannerMessage', 'Profile updated successfully!');
+      await AsyncStorage.setItem('bannerMessage', 'Personal info updated successfully!');
       await AsyncStorage.setItem('bannerType', 'success');
       await AsyncStorage.setItem('resetFirstLoad', 'true');
       navigation.navigate('Profile');
@@ -97,14 +94,6 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
     setShowDatePicker(false);
     setBirthday(currentDate);
   };
-
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
 
   return (
     <ScrollView style={styles.container}>
@@ -188,6 +177,7 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
       >
         <Text>{selectedCity || 'Select City'}</Text>
       </TouchableOpacity>
+
       <Modal visible={cityModalVisible} transparent={true} animationType="slide">
         <View style={styles.modalView}>
           <TextInput
@@ -234,6 +224,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     padding: 10,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   button: {
     backgroundColor: colors.primary,
