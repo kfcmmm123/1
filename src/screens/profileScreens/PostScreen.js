@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, FlatList, Image, StyleSheet, TouchableOp
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, query, onSnapshot } from 'firebase/firestore';
 import colors from '../../../assets/colors/colors';
-import Icon from 'react-native-vector-icons/FontAwesome';  
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const PostScreen = () => {
   const [postText, setPostText] = useState('');
@@ -26,9 +26,9 @@ const PostScreen = () => {
       });
       setPosts(postsArray);
     });
-  
+
     return () => unsubscribe(); // Clean up on unmount
-  }, []);  
+  }, []);
 
   const handlePost = async () => {
     if (postText.trim() === '') return;
@@ -53,7 +53,7 @@ const PostScreen = () => {
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <View style={styles.post}>
-              <Image source={{ uri: item.profilePicUrl || '../../../assets/icons/defaultUserImage.png' }} style={styles.profilePic} />
+              {/* <Image source={{ uri: item.profilePicUrl || '../../../assets/profile-pic.png' }} style={styles.profilePic} /> */}
               <View style={styles.postContent}>
                 <Text style={styles.postText}>{item.text}</Text>
                 <Text style={styles.timestamp}>{item.timestamp}</Text>
@@ -63,11 +63,11 @@ const PostScreen = () => {
         />
       ) : (
         <View style={styles.centered}>
-          <Image source={require("../../../assets/icons/camera.png")} style={{height: 50, width: 60, tintColor: 'grey', margin: 10}}></Image>
-          <Text style={{color: 'grey', fontSize: 20}}>
+          <Image source={require("../../../assets/icons/camera.png")} style={{ height: 50, width: 60, tintColor: 'grey', margin: 10 }}></Image>
+          <Text style={{ color: 'grey', fontSize: 20 }}>
             Start sharing posts
           </Text>
-          <Text style={{color: 'grey', marginTop: 5, fontSize: 16, width: "80%", textAlign: "center"}}>
+          <Text style={{ color: 'grey', marginTop: 5, fontSize: 16, width: "80%", textAlign: "center" }}>
             Once you do, the posts will show up here.
           </Text>
         </View>
@@ -90,7 +90,7 @@ const PostScreen = () => {
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Moments</Text>
+            <Text style={styles.headerTitle}>Post</Text>
             <TouchableOpacity onPress={handlePost}>
               <Text style={styles.postText}>Post</Text>
             </TouchableOpacity>
@@ -104,7 +104,7 @@ const PostScreen = () => {
             onChangeText={setPostText}
           />
 
-          <TouchableOpacity style={styles.optionButton}>
+          {/* <TouchableOpacity style={styles.optionButton}>
             <Icon name="hashtag" size={20} color="#888" style={styles.iconStyle} />
             <Text style={styles.optionText}>Add a topic</Text>
           </TouchableOpacity>
@@ -112,7 +112,7 @@ const PostScreen = () => {
           <TouchableOpacity style={styles.optionButton}>
             <Icon name="map-marker" size={20} color="#888" style={styles.iconStyle} />
             <Text style={styles.optionText}>Location</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </KeyboardAvoidingView>
       </Modal>
 

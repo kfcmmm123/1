@@ -391,11 +391,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: 'bold',
   },
   statLabel: {
-    fontSize: 16,
+    fontSize: 13,
   },
   icon: {
     width: 60,
@@ -403,9 +403,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   SettingIcon: {
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     marginBottom: 5,
+    marginTop: 5,
   },
   tabIcon: {
     width: 25,
