@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, Image, StyleSheet, TouchableOpacity, Modal, KeyboardAvoidingView } from 'react-native';
-import { db } from '../../api/firebaseConfig';
+import { auth, db } from '../../api/firebaseConfig';
 import { collection, addDoc, query, onSnapshot } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '../../../assets/colors/colors';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -11,39 +12,51 @@ const PostScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    const q = query(collection(db, "posts"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const postsArray = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        // Convert timestamp here
-        const timestamp = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() + ' ' + new Date(data.timestamp.seconds * 1000).toLocaleTimeString() : 'No date';
-        return {
-          id: doc.id,
-          text: data.text,
-          timestamp: timestamp, // Use the converted timestamp
-          profilePicUrl: data.profilePicUrl
-        };
+    const user = auth.currentUser;
+    if (user) {
+      const userPostsRef = collection(db, "users", user.uid, "posts");
+      const q = query(userPostsRef);
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const postsArray = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            text: data.text,
+            timestamp: data.timestamp.toDate().toLocaleString(),
+          };
+        });
+        setPosts(postsArray);
       });
-      setPosts(postsArray);
-    });
-
-    return () => unsubscribe(); // Clean up on unmount
-  }, []);
-
+  
+      return () => unsubscribe(); // Clean up on unmount
+    } else {
+      setPosts([]); // Clear posts if no user is signed in
+    }
+  }, [auth.currentUser]); // Dependency on the current user
+  
   const handlePost = async () => {
-    if (postText.trim() === '') return;
-
+    if (postText.trim() === '') {
+      Alert.alert("Please enter some text to post.");
+      return;
+    }
+  
     try {
-      await addDoc(collection(db, "posts"), {
+      const user = auth.currentUser;
+      if (!user) {
+        Alert.alert("No user signed in");
+        return;
+      }
+      const userPostsRef = collection(db, "users", user.uid, "posts");
+      await addDoc(userPostsRef, {
         text: postText,
-        timestamp: new Date(),
+        timestamp: new Date(), // Stores the current time
       });
       setPostText('');
       setModalVisible(false);
     } catch (error) {
       console.error("Error adding post:", error);
     }
-  };
+  };  
 
   return (
     <View style={styles.container}>

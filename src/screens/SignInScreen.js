@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, StyleSheet, Image, Alert, Modal, ActivityIndicator } from 'react-native';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import colors from '../../assets/colors/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../api/firebaseConfig';
 
 const SignInScreen = ({ navigation, route }) => {
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisibility, setPasswordVisibility] = useState(true); // Password initially hidden
@@ -19,6 +20,7 @@ const SignInScreen = ({ navigation, route }) => {
   }, [route.params?.needVerification]);
 
   const handleSignIn = async () => {
+    setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       if (userCredential.user && userCredential.user.emailVerified) {
@@ -38,14 +40,21 @@ const SignInScreen = ({ navigation, route }) => {
           await AsyncStorage.setItem('bannerMessage', 'Signed in successfully!');
           await AsyncStorage.setItem('bannerType', 'success');
           await AsyncStorage.setItem('resetFirstLoad', 'true');
-          navigation.navigate(storedData.isNewUser ? 'UserInfoScreen' : 'Profile');
+          const isNewUser = await AsyncStorage.getItem('isNewUser');
+          const targetScreen = isNewUser === 'true' ? 'UserInfoScreen' : 'Profile';
+          await AsyncStorage.removeItem('isNewUser'); 
+          setLoading(false);
+          navigation.navigate(targetScreen);
         } else {
           console.error("No such user!");
           Alert.alert('Error', 'No user data available.');
+          setLoading(false);
         }
       } else {
-        await AsyncStorage.setItem('bannerMessage', 'Failed to update profile.');
-        await AsyncStorage.setItem('bannerType', 'error');      }
+        await AsyncStorage.setItem('bannerMessage', 'Failed to sign in.');
+        await AsyncStorage.setItem('bannerType', 'error');
+        setLoading(false);
+      }
     } catch (error) {
       // Error handling based on error.code
       switch (error.code) {
@@ -139,6 +148,18 @@ const SignInScreen = ({ navigation, route }) => {
           Please check your email to verify your account before signing in.
         </Text>
       )}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={loading}
+        onRequestClose={() => {
+          setLoading(false);
+        }}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -218,6 +239,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 10,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    transform: [{ translateX: -25 }, { translateY: -25 }],
+    width: 50,
+    height: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
   },
 });
 
