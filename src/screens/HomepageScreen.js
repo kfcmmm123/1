@@ -8,11 +8,11 @@ import colors from '../../assets/colors/colors';
 import HomepageSearchBar from '../components/HomepageSearchBar';
 import ResultsList from '../components/ResultsList';
 
-const HomepageScreen = ({route, navigation}) => {
+const HomepageScreen = ({ route, navigation }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
-    const [totalCompleted, setTotalCompleted] = useState(0); 
-    const [totalHours, setTotalHours] = useState(100); 
+    const [totalCompleted, setTotalCompleted] = useState(0);
+    const [totalHours, setTotalHours] = useState(100);
 
     const [tasks, setTasks] = useState([]);
     const [filteredTasks, setFilteredTasks] = useState([]);
@@ -29,7 +29,7 @@ const HomepageScreen = ({route, navigation}) => {
         } catch (error) {
             console.error('Error fetching tasks:', error);
         }
-    };    
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -37,7 +37,7 @@ const HomepageScreen = ({route, navigation}) => {
                 await fetchTasks(); // Fetch tasks from AsyncStorage
                 handleFilterChange('all'); // Always reset to 'All' filter upon focusing
             };
-    
+
             fetchDataAndUpdateState();
         }, []) // Dependencies array is empty to indicate this effect doesn't depend on any state or props
     );
@@ -47,11 +47,11 @@ const HomepageScreen = ({route, navigation}) => {
             fetchTasks(); // handleFilterChange is called within fetchTasks
         }, [])
     );
-    
+
     const handleFilterChange = (newFilter, allTasks = tasks) => {
         setActiveFilter(newFilter);
         let filtered = allTasks;
-        
+
         if (newFilter === 'all') {
             filtered = filtered.filter(task => task.status === 'Ongoing' || task.status === 'Completed');
         }
@@ -67,7 +67,7 @@ const HomepageScreen = ({route, navigation}) => {
             );
         }
         setFilteredTasks(filtered);
-    };  
+    };
 
     useEffect(() => {
         handleFilterChange(activeFilter);
@@ -78,7 +78,7 @@ const HomepageScreen = ({route, navigation}) => {
             <Text style={[styles.filterButtonText, isActive && styles.filterButtonActiveText]}>{title}</Text>
             {isActive && <View style={styles.activeFilterLine} />}
         </TouchableOpacity>
-    );      
+    );
 
     useEffect(() => {
         const loadInitialTotalCompleted = async () => {
@@ -121,20 +121,20 @@ const HomepageScreen = ({route, navigation}) => {
         React.useCallback(() => {
             const getHours = async () => {
                 try {
-                const hours = await AsyncStorage.getItem('userHours');
-                if (hours !== null) {
-                    setTotalHours(parseInt(hours, 10));
-                }
+                    const hours = await AsyncStorage.getItem('userHours');
+                    if (hours !== null) {
+                        setTotalHours(parseInt(hours, 10));
+                    }
                 } catch (e) {
                 }
             };
             getHours();
         }, [])
     );
-    
+
     const progress = (totalCompleted / totalHours) * 100;
 
-    return(
+    return (
         <ScrollView style={styles.scrollView}>
             <View style={styles.topBar}>
                 <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')}>
@@ -144,8 +144,8 @@ const HomepageScreen = ({route, navigation}) => {
                     <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.SettingIcon} />
                 </TouchableOpacity>
             </View>
-            <Text style = { styles.header }>VolunTrack</Text>
-            <Text style = { styles.text }>Track your volunteering hours and explore new volunteering opportunities!</Text>
+            <Text style={styles.header}>VolunTrack</Text>
+            <Text style={styles.text}>Track your volunteering hours and explore new volunteering opportunities!</Text>
             <HomepageSearchBar
                 term={searchTerm}
                 onTermChange={setSearchTerm}
@@ -155,9 +155,9 @@ const HomepageScreen = ({route, navigation}) => {
             <View style={styles.progressBarContainer}>
                 <View style={[styles.progressBar, { width: `${progress}%` }]} />
             </View>
-            
-            <Text style = { styles.hourText }> {totalCompleted}/{totalHours} Hours Completed</Text>
-            
+
+            <Text style={styles.hourText}> {totalCompleted}/{totalHours} Hours Completed</Text>
+
             <View style={styles.filterOptions}>
                 <FilterButton title="ALL" isActive={activeFilter === 'all'} onPress={() => handleFilterChange('all')} />
                 <FilterButton title="ONGOING" isActive={activeFilter === 'ongoing'} onPress={() => handleFilterChange('ongoing')} />
@@ -176,15 +176,15 @@ const HomepageScreen = ({route, navigation}) => {
                     {activeFilter === 'all' && "You don't have any ongoing/completed volunteering yet. Go apply one!"}
                 </Text>
             )}
-            
-            <StatusBar style = "auto" />
-            
+
+            <StatusBar style="auto" />
+
         </ScrollView>
     );
 }
 
-const styles = StyleSheet.create ({
-    scrollView:{
+const styles = StyleSheet.create({
+    scrollView: {
         backgroundColor: colors.background,
     },
     progressBarContainer: {
@@ -213,34 +213,34 @@ const styles = StyleSheet.create ({
     },
     header: {
         color: colors.primary,
-        fontFamily: 'PingFangSC-Semibold', 
-        fontSize: 36, 
+        fontFamily: 'PingFangSC-Semibold',
+        fontSize: 36,
         marginVertical: 15,
-        textAlign: 'center', 
+        textAlign: 'center',
         fontWeight: 'bold',
-    }, 
+    },
     subHeader: {
         color: colors.primary,
-        fontFamily: 'PingFangSC-Semibold', 
-        fontSize: 28, 
+        fontFamily: 'PingFangSC-Semibold',
+        fontSize: 28,
         marginVertical: 15,
-        textAlign: 'center', 
+        textAlign: 'center',
         fontWeight: 'bold',
-    }, 
+    },
     text: {
-        color: colors.textDark, 
+        color: colors.textDark,
         fontFamily: 'PingFangSC-Regular',
-        fontSize: 16, 
+        fontSize: 16,
         marginHorizontal: 60,
-        marginBottom: 40, 
+        marginBottom: 40,
         textAlign: 'center'
     },
     hourText: {
-        color: colors.textDark, 
+        color: colors.textDark,
         fontFamily: 'PingFangSC-Regular',
-        fontSize: 15, 
+        fontSize: 15,
         marginHorizontal: 60,
-        marginBottom: 20, 
+        marginBottom: 20,
         marginTop: -15,
         textAlign: 'center'
     },
@@ -259,8 +259,8 @@ const styles = StyleSheet.create ({
         marginLeft: 15,
     },
     SettingIcon: {
-        width: 60,
-        height: 60,
+        width: 50,
+        height: 50,
         marginTop: 60,
         marginRight: 15,
     },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create ({
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        paddingTop: 5, 
+        paddingTop: 5,
 
     },
     filterButton: {

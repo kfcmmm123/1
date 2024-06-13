@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, StyleSheet, Linking, Image, Alert } from 'react-native';
 import { createUserWithEmailAndPassword, sendEmailVerification  } from 'firebase/auth';
-import { auth } from '../api/firebaseConfig';
+import { auth, db } from '../api/firebaseConfig';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import colors from '../../assets/colors/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -32,7 +33,14 @@ const SignUpScreen = ({ navigation }) => {
   
     createUserWithEmailAndPassword(auth, email, password)
       .then(async (userCredentials) => {
-        await AsyncStorage.setItem('isNewUser', 'true');  // Set isNewUser to true on successful sign-up
+        // Create a document in Firestore after account creation
+        const userDocRef = doc(db, 'users', userCredentials.user.uid);
+        await setDoc(userDocRef, {
+          email: email,
+          createdAt: new Date() // Add other initial fields as needed
+        });
+
+        await AsyncStorage.setItem('isNewUser', 'true'); // Set isNewUser to true on successful sign-up
         sendEmailVerification(userCredentials.user)
           .then(() => {
             Alert.alert('Success', 'Verification email sent! Please check your email to verify your account.');
@@ -58,6 +66,7 @@ const SignUpScreen = ({ navigation }) => {
             Alert.alert('Error', 'Error signing up: ' + error.message);
         }
       });
+
   }; 
 
   // const resendVerificationEmail = () => {
