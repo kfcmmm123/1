@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, ScrollView, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import colors from '../../assets/colors/colors';
+import colors from '../../../assets/colors/colors';
 
 const UserDetailsScreen = ({ navigation }) => {
     const [userInfo, setUserInfo] = useState({

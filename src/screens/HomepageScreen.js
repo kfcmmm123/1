@@ -7,6 +7,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import colors from '../../assets/colors/colors';
 import HomepageSearchBar from '../components/HomepageSearchBar';
 import ResultsList from '../components/ResultsList';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../api/firebaseConfig';
 
 const HomepageScreen = ({ route, navigation }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +28,11 @@ const HomepageScreen = ({ route, navigation }) => {
             const fetchedTasks = result.map(([key, value]) => JSON.parse(value));
             setTasks(fetchedTasks);
             handleFilterChange('all', fetchedTasks); // This ensures filter is applied right after fetching
+            const completedCount = fetchedTasks.filter(task => task.status === 'Completed').length;
+            if (auth.currentUser) {
+                const userRef = doc(db, 'users', auth.currentUser.uid);
+                await setDoc(userRef, { volunteered: completedCount }, { merge: true });
+            }
         } catch (error) {
             console.error('Error fetching tasks:', error);
         }

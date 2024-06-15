@@ -152,9 +152,9 @@ const SignInScreen = ({ navigation, route }) => {
         animationType="fade"
         transparent={true}
         visible={loading}
-        onRequestClose={() => {
-          setLoading(false);
-        }}
+        // onRequestClose={() => {
+        //   setLoading(false);
+        // }}
       >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
@@ -242,15 +242,11 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     position: 'absolute',
-    left: '50%',
-    top: '50%',
-    transform: [{ translateX: -25 }, { translateY: -25 }],
-    width: 50,
-    height: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
   },
 });
 

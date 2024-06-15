@@ -4,7 +4,6 @@ import { auth, db } from '../api/firebaseConfig';
 import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { launchImageLibrary } from 'react-native-image-picker';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';

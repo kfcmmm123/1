@@ -18,8 +18,8 @@ import HomepageSettingScreen from './src/screens/HomepageSettingScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
-import UserInfoScreen from './src/screens/UserInfoScreen';
-import UserInterestsScreen from './src/screens/UserInterestsScreen';
+import UserInfoScreen from './src/screens/NewUserScreens/UserInfoScreen';
+import UserInterestsScreen from './src/screens/NewUserScreens/UserInterestsScreen';
 
 import colors from './assets/colors/colors';
 

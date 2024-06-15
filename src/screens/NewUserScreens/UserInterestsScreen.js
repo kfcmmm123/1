@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Button, StyleSheet, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { db, auth } from '../api/firebaseConfig';
+import { db, auth } from '../../api/firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import colors from '../../assets/colors/colors';
+import colors from '../../../assets/colors/colors';
 
 const hobbiesOptions = [
     'Sports', 'Animals', 'Environment', 'Teaching', 'Peer Support', 'Youth', 'Seniors',
