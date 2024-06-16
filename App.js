@@ -20,6 +20,7 @@ import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import UserInfoScreen from './src/screens/NewUserScreens/UserInfoScreen';
 import UserInterestsScreen from './src/screens/NewUserScreens/UserInterestsScreen';
+import UserSkillsScreen from './src/screens/NewUserScreens/UserSkillsScreen';
 
 import colors from './assets/colors/colors';
 
@@ -183,6 +184,14 @@ export default function App() {
               options={{
                 headerShown: true,
                 title: 'Interests'
+              }}
+            />
+            <RootStack.Screen
+              name="UserSkillsScreen"
+              component={UserSkillsScreen}
+              options={{
+                headerShown: true,
+                title: 'Skills'
               }}
             />
           </RootStack.Navigator>

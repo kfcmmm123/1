@@ -27,12 +27,7 @@ const HomepageScreen = ({ route, navigation }) => {
             const result = await AsyncStorage.multiGet(keys.filter(key => key.startsWith('@task_status_')));
             const fetchedTasks = result.map(([key, value]) => JSON.parse(value));
             setTasks(fetchedTasks);
-            handleFilterChange('all', fetchedTasks); // This ensures filter is applied right after fetching
-            const completedCount = fetchedTasks.filter(task => task.status === 'Completed').length;
-            if (auth.currentUser) {
-                const userRef = doc(db, 'users', auth.currentUser.uid);
-                await setDoc(userRef, { volunteered: completedCount }, { merge: true });
-            }
+            handleFilterChange('all', fetchedTasks); // Apply initial filter right after fetching
         } catch (error) {
             console.error('Error fetching tasks:', error);
         }
@@ -61,8 +56,7 @@ const HomepageScreen = ({ route, navigation }) => {
 
         if (newFilter === 'all') {
             filtered = filtered.filter(task => task.status === 'Ongoing' || task.status === 'Completed');
-        }
-        else if (newFilter === 'ongoing') {
+        } else if (newFilter === 'ongoing') {
             filtered = filtered.filter(task => task.status === 'Ongoing');
         } else if (newFilter === 'completed') {
             filtered = filtered.filter(task => task.status === 'Completed');
@@ -78,7 +72,7 @@ const HomepageScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         handleFilterChange(activeFilter);
-    }, [searchTerm]);
+    }, [searchTerm, activeFilter]);
 
     const FilterButton = ({ title, isActive, onPress }) => (
         <TouchableOpacity style={styles.filterButton} onPress={onPress}>

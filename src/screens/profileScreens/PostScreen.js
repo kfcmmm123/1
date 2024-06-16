@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, FlatList, Image, StyleSheet, TouchableOpacity, Modal, KeyboardAvoidingView } from 'react-native';
+import { View, ScrollView, Text, TextInput, Button, FlatList, Image, StyleSheet, TouchableOpacity, Modal, KeyboardAvoidingView } from 'react-native';
 import { auth, db } from '../../api/firebaseConfig';
 import { collection, addDoc, query, onSnapshot } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -60,32 +60,36 @@ const PostScreen = () => {
 
   return (
     <View style={styles.container}>
-      {posts.length > 0 ? (
-        <FlatList
-          data={posts}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.post}>
-              {/* <Image source={{ uri: item.profilePicUrl || '../../../assets/profile-pic.png' }} style={styles.profilePic} /> */}
-              <View style={styles.postContent}>
-                <Text style={styles.postText}>{item.text}</Text>
-                <Text style={styles.timestamp}>{item.timestamp}</Text>
+      <View
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+      >
+        {posts.length > 0 ? (
+          <FlatList
+            data={posts}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.post}>
+                <View style={styles.postContent}>
+                  <Text style={styles.postText}>{item.text}</Text>
+                  <Text style={styles.timestamp}>{item.timestamp}</Text>
+                </View>
               </View>
-            </View>
-          )}
-        />
-      ) : (
-        <View style={styles.centered}>
-          <Image source={require("../../../assets/icons/camera.png")} style={{ height: 50, width: 60, tintColor: 'grey', margin: 10 }}></Image>
-          <Text style={{ color: 'grey', fontSize: 20 }}>
-            Start sharing posts
-          </Text>
-          <Text style={{ color: 'grey', marginTop: 5, fontSize: 16, width: "80%", textAlign: "center" }}>
-            Once you do, the posts will show up here.
-          </Text>
-        </View>
-      )}
-
+            )}
+          />
+        ) : (
+          <View style={styles.centered}>
+            <Image source={require("../../../assets/icons/camera.png")} style={{ height: 50, width: 60, tintColor: 'grey', margin: 10 }}></Image>
+            <Text style={{ color: 'grey', fontSize: 20 }}>
+              Start sharing posts 
+            </Text>
+            <Text style={{ color: 'grey', marginTop: 5, fontSize: 16, width: "80%", textAlign: "center" }}>
+              Once you do, the posts will show up here.
+            </Text>
+          </View>
+        )}
+      </View>
+      
       <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
@@ -116,19 +120,8 @@ const PostScreen = () => {
             value={postText}
             onChangeText={setPostText}
           />
-
-          {/* <TouchableOpacity style={styles.optionButton}>
-            <Icon name="hashtag" size={20} color="#888" style={styles.iconStyle} />
-            <Text style={styles.optionText}>Add a topic</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.optionButton}>
-            <Icon name="map-marker" size={20} color="#888" style={styles.iconStyle} />
-            <Text style={styles.optionText}>Location</Text>
-          </TouchableOpacity> */}
         </KeyboardAvoidingView>
       </Modal>
-
     </View>
   );
 };
@@ -136,7 +129,13 @@ const PostScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',  // Ensures content is centered when less content
   },
   centered: {
     flex: 1,
@@ -153,11 +152,12 @@ const styles = StyleSheet.create({
     bottom: 20,
     backgroundColor: '#03A9F4',
     borderRadius: 28,
-    elevation: 8
+    elevation: 8,
+    zIndex: 1000, // Ensure it stays on top
   },
   fabIcon: {
     fontSize: 24,
-    color: 'white'
+    color: 'white',
   },
   fullScreenModalView: {
     position: 'absolute',  // Ensures it covers the entire screen

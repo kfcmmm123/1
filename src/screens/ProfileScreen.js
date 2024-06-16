@@ -137,16 +137,6 @@ const ProfileScreen = ({ navigation }) => {
 
   const Tab = createMaterialTopTabNavigator();
 
-  // function BookmarkScreen() {
-  //   return (
-  //     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-  //       <Text>
-  //         Bookmark Screen
-  //       </Text>
-  //     </View>
-  //   );
-  // }
-
   function ConnectionScreen() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -158,7 +148,7 @@ const ProfileScreen = ({ navigation }) => {
   }
 
   return (
-    <ScrollView
+    <View
       style={styles.scrollView}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       contentContainerStyle={{ flexGrow: 1 }}  // Ensures the ScrollView content fills the space
@@ -208,7 +198,9 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.statValue}>{currentUser.group || 0}</Text>
           <Text style={styles.statLabel}>Group</Text>
         </View>
+
       </View>
+
 
       <View style={styles.utilityContainer}>
         <Tab.Navigator
@@ -252,7 +244,7 @@ const ProfileScreen = ({ navigation }) => {
           />
         </Tab.Navigator>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -260,6 +252,8 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   container: {
     flex: 1,
@@ -358,7 +352,8 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginVertical: 10,
+    marginTop: 120,
+    marginBottom: 5,
     color: '#000',
     textAlign: 'center',
     flexDirection: 'row',
@@ -366,8 +361,7 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 16,
-    marginBottom: 20,
-    marginTop: 10,
+    marginVertical: 15,
     flexDirection: 'row',
     flexWrap: 'wrap',
   },

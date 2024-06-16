@@ -175,7 +175,7 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
         style={[styles.input, !selectedCountry && { backgroundColor: '#f0f0f0' }]}
         disabled={!selectedCountry}
       >
-        <Text>{selectedCity || 'Select City'}</Text>
+        <Text>{selectedCity || 'Select City (select your country first!)'}</Text>
       </TouchableOpacity>
 
       <Modal visible={cityModalVisible} transparent={true} animationType="slide">
