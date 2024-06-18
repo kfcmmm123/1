@@ -17,7 +17,6 @@ import BookmarkedScreen from './profileScreens/BookmarkedScreen';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AccountSettingScreen } from './ProfileSettingScreen';
-import PullToRefresh from 'react-native-pull-to-refresh';
 
 const ProfileScreen = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -26,9 +25,11 @@ const ProfileScreen = ({ navigation }) => {
   const firstLoad = useRef(true);
   const [bannerMessage, setBannerMessage] = useState('');
   const [bannerType, setBannerType] = useState('success');
+  const [completedTasksCount, setCompletedTasksCount] = useState(0);
 
   const fetchUserData = async () => {
     setLoading(true);
+    await fetchCompletedTasksCount();
     const user = auth.currentUser;
     if (user) {
       const userDocRef = doc(db, 'users', user.uid);
@@ -47,6 +48,7 @@ const ProfileScreen = ({ navigation }) => {
 
   const refreshUserData = async () => {
     const user = auth.currentUser;
+    await fetchCompletedTasksCount();
     if (user) {
       const userDocRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(userDocRef);
@@ -59,6 +61,11 @@ const ProfileScreen = ({ navigation }) => {
     } else {
       setCurrentUser(null);
     }
+  };
+
+  const fetchCompletedTasksCount = async () => {
+    const count = await AsyncStorage.getItem('@completed_tasks_count');
+    setCompletedTasksCount(count ? JSON.parse(count) : 0);
   };
 
   const checkForUpdates = async () => {
@@ -150,16 +157,14 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <View
-      style={styles.scrollView}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={{ flexGrow: 1 }}  // Ensures the ScrollView content fills the space
+      style={{flex: 1}}
     >
       {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
 
-      <PullToRefresh
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        style={{ width: '100%', height: '0%' }}
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ flexGrow: 1 }}  // Ensures the ScrollView content fills the space
       >
         <View style={styles.about_us_profile_setting}>
           <TouchableOpacity style={styles.aboutUs} onPress={() => navigation.navigate('AboutUsScreen')}>
@@ -189,7 +194,7 @@ const ProfileScreen = ({ navigation }) => {
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
+            <Text style={styles.statValue}>{completedTasksCount || 0}</Text>
             <Text style={styles.statLabel}>Volunteer</Text>
           </View>
           <View style={styles.statItem}>
@@ -207,7 +212,7 @@ const ProfileScreen = ({ navigation }) => {
 
         </View>
 
-      </PullToRefresh>
+      </ScrollView>
 
       <View style={styles.utilityContainer}>
         <Tab.Navigator
@@ -259,8 +264,8 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
   },
   container: {
     flex: 1,

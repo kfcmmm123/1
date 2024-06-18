@@ -28,18 +28,14 @@ const HomepageScreen = ({ route, navigation }) => {
             const fetchedTasks = result.map(([key, value]) => JSON.parse(value));
             setTasks(fetchedTasks);
             handleFilterChange('all', fetchedTasks); // Apply initial filter right after fetching
-
+    
             const completedTasksCount = fetchedTasks.filter(task => task.status === 'Completed').length;            
-            // Store completed tasks count in Firebase
-            const user = auth.currentUser;
-            if (user) {
-                const userDocRef = doc(db, 'users', user.uid);
-                await setDoc(userDocRef, { volunteered: completedTasksCount }, { merge: true });
-            }
+            // Store completed tasks count in AsyncStorage
+            await AsyncStorage.setItem('@completed_tasks_count', JSON.stringify(completedTasksCount));
         } catch (error) {
             console.error('Error fetching tasks:', error);
         }
-    };
+    };    
 
     // useFocusEffect(
     //     useCallback(() => {
