@@ -17,6 +17,7 @@ import BookmarkedScreen from './profileScreens/BookmarkedScreen';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AccountSettingScreen } from './ProfileSettingScreen';
+import PullToRefresh from 'react-native-pull-to-refresh';
 
 const ProfileScreen = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -155,52 +156,58 @@ const ProfileScreen = ({ navigation }) => {
     >
       {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
 
-      <View style={styles.about_us_profile_setting}>
-        <TouchableOpacity style={styles.aboutUs} onPress={() => navigation.navigate('AboutUsScreen')}>
-          <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
-        </TouchableOpacity>
+      <PullToRefresh
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+        style={{ width: '100%', height: '0%' }}
+      >
+        <View style={styles.about_us_profile_setting}>
+          <TouchableOpacity style={styles.aboutUs} onPress={() => navigation.navigate('AboutUsScreen')}>
+            <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
+          </TouchableOpacity>
 
-        <View style={styles.profileContainer}>
-          <GestureHandlerRootView>
-            <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('ProfileSettingScreen')}>
-              <Image
-                source={require('../../assets/profile-pic.png')}
-                style={styles.profileImage}
-              />
-            </TouchableHighlight>
-          </GestureHandlerRootView>
+          <View style={styles.profileContainer}>
+            <GestureHandlerRootView>
+              <TouchableHighlight underlayColor="#ddd" onPress={() => navigation.navigate('ProfileSettingScreen')}>
+                <Image
+                  source={require('../../assets/profile-pic.png')}
+                  style={styles.profileImage}
+                />
+              </TouchableHighlight>
+            </GestureHandlerRootView>
 
-          <Text style={styles.profileName}>{currentUser.displayName || 'Someone Awesome'}</Text>
+            <Text style={styles.profileName}>{currentUser.displayName || 'Someone Awesome'}</Text>
 
-          <Text style={styles.bio}>{currentUser.bio || 'This person is lazy, left no description..'}</Text>
+            <Text style={styles.bio}>{currentUser.bio || 'This person is lazy, left no description..'}</Text>
+          </View>
+
+
+          <TouchableOpacity style={styles.setting} onPress={() => navigation.navigate('ProfileSettingScreen')}>
+            <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.SettingIcon} />
+          </TouchableOpacity>
         </View>
 
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
+            <Text style={styles.statLabel}>Volunteer</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{currentUser.facilitated || 0}</Text>
+            <Text style={styles.statLabel}>Facilitated</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{currentUser.events || 0}</Text>
+            <Text style={styles.statLabel}>Events</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{currentUser.group || 0}</Text>
+            <Text style={styles.statLabel}>Group</Text>
+          </View>
 
-        <TouchableOpacity style={styles.setting} onPress={() => navigation.navigate('ProfileSettingScreen')}>
-          <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.SettingIcon} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
-          <Text style={styles.statLabel}>Volunteer</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{currentUser.facilitated || 0}</Text>
-          <Text style={styles.statLabel}>Facilitated</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{currentUser.events || 0}</Text>
-          <Text style={styles.statLabel}>Events</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{currentUser.group || 0}</Text>
-          <Text style={styles.statLabel}>Group</Text>
         </View>
 
-      </View>
-
+      </PullToRefresh>
 
       <View style={styles.utilityContainer}>
         <Tab.Navigator
@@ -352,7 +359,7 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginTop: 120,
+    marginTop: 20,
     marginBottom: 5,
     color: '#000',
     textAlign: 'center',
@@ -374,6 +381,7 @@ const styles = StyleSheet.create({
   utilityContainer: {
     flex: 1,
     width: '100%',
+    marginTop: -80,
   },
   tab: {
     width: '100%',
