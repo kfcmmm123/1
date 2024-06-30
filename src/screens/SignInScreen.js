@@ -42,7 +42,7 @@ const SignInScreen = ({ navigation, route }) => {
           await AsyncStorage.setItem('resetFirstLoad', 'true');
           const isNewUser = await AsyncStorage.getItem('isNewUser');
           const targetScreen = isNewUser === 'true' ? 'UserInfoScreen' : 'Profile';
-          await AsyncStorage.removeItem('isNewUser'); 
+          await AsyncStorage.removeItem('isNewUser');
           setLoading(false);
           navigation.navigate(targetScreen);
         } else {
@@ -75,7 +75,7 @@ const SignInScreen = ({ navigation, route }) => {
       }
     }
   };
-  
+
 
   const togglePasswordVisibility = () => {
     setPasswordVisibility(!passwordVisibility);
@@ -117,19 +117,19 @@ const SignInScreen = ({ navigation, route }) => {
           secureTextEntry={passwordVisibility}
           style={styles.input}
         />
-        <TouchableOpacity 
-          style={styles.visibilityIcon} 
+        <TouchableOpacity
+          style={styles.visibilityIcon}
           onPress={togglePasswordVisibility}
         >
-          {passwordVisibility ? 
+          {passwordVisibility ?
             <Image source={require('../../assets/icons/hidePassword.png')} style={styles.illustration} />
-            : 
+            :
             <Image source={require('../../assets/icons/showPassword.png')} style={styles.illustration} />
           }
         </TouchableOpacity>
       </View>
-      <TouchableOpacity 
-        style={styles.forgotPassword} 
+      <TouchableOpacity
+        style={styles.forgotPassword}
         onPress={handleForgotPassword}
       >
         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -152,9 +152,9 @@ const SignInScreen = ({ navigation, route }) => {
         animationType="fade"
         transparent={true}
         visible={loading}
-        // onRequestClose={() => {
-        //   setLoading(false);
-        // }}
+      // onRequestClose={() => {
+      //   setLoading(false);
+      // }}
       >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />

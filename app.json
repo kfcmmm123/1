@@ -2,7 +2,7 @@
   "expo": {
     "name": "VolunTrack",
     "slug": "voluntrack",
-    "version": "1.0.2",
+    "version": "3.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -20,7 +20,7 @@
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.leoyin.voluntrack",
-      "buildNumber": "10"
+      "buildNumber": "13"
     },
     "android": {
       "package": "com.leoyin.voluntrack",
