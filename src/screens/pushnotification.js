@@ -32,13 +32,13 @@ const usePushNotification = () => {
         const token = expoPushToken.data;
         console.log('Expo Push Token:', token);
 
-        Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'test 1',
-            body: "hello friends",
-          },
-          trigger: null,
-        });
+        // Notifications.scheduleNotificationAsync({
+        //   content: {
+        //     title: 'test 1',
+        //     body: "hello friends",
+        //   },
+        //   trigger: null,
+        // });
 
         Notifications.addNotificationReceivedListener(handleNotification);
       } catch (error) {

@@ -148,8 +148,8 @@ const ProfileScreen = ({ navigation }) => {
   function ConnectionScreen() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>
-          Component Screen
+        <Text style={styles.noConnectionText}>
+          No connection available
         </Text>
       </View>
     );
@@ -157,7 +157,7 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <View
-      style={{flex: 1}}
+      style={{ flex: 1 }}
     >
       {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
 
@@ -417,7 +417,11 @@ const styles = StyleSheet.create({
   tabIcon: {
     width: 25,
     height: 25,
-  }
+  },
+  noConnectionText: {
+    fontSize: 18,
+    color: 'gray',
+  },
 });
 
 export default ProfileScreen;

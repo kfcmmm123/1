@@ -20,7 +20,7 @@
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.leoyin.voluntrack",
-      "buildNumber": "13"
+      "buildNumber": "14"
     },
     "android": {
       "package": "com.leoyin.voluntrack",
