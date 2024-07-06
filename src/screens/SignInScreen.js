@@ -65,7 +65,7 @@ const SignInScreen = ({ navigation, route }) => {
           alert('The user account has been disabled by an administrator.');
           break;
         case 'auth/user-not-found':
-          alert('There is no user corresponding to the email address.');
+          alert('There is no user corresponding to the email address. Go Sign Up!');
           break;
         case 'auth/wrong-password':
           alert('The password is wrong for the given email.');
@@ -73,6 +73,7 @@ const SignInScreen = ({ navigation, route }) => {
         default:
           alert('Error signing in: ' + error.message);
       }
+      setLoading(false);
     }
   };
 
@@ -139,7 +140,7 @@ const SignInScreen = ({ navigation, route }) => {
       </TouchableOpacity>
       <View style={styles.footer}>
         <Text>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('SignUpScreen')}>
+        <TouchableOpacity onPress={() => navigation.replace('SignUpScreen')}>
           <Text style={styles.link}>Sign up</Text>
         </TouchableOpacity>
       </View>

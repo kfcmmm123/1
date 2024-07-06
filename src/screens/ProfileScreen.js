@@ -68,15 +68,6 @@ const ProfileScreen = ({ navigation }) => {
     setCompletedTasksCount(count ? JSON.parse(count) : 0);
   };
 
-  const checkForUpdates = async () => {
-    const forceUpdate = await AsyncStorage.getItem('resetFirstLoad');
-    if (forceUpdate === 'true') {
-      await AsyncStorage.removeItem('resetFirstLoad');
-      return true;
-    }
-    return false;
-  };
-
   useFocusEffect(
     useCallback(() => {
       const initiateDataFetch = async () => {
@@ -93,9 +84,11 @@ const ProfileScreen = ({ navigation }) => {
         // Manage the banner
         const bannerToShow = await AsyncStorage.getItem('bannerMessage');
         const bannerTypeToShow = await AsyncStorage.getItem('bannerType');
+
         if (bannerToShow && bannerTypeToShow) {
           setBannerMessage(bannerToShow);
           setBannerType(bannerTypeToShow);
+
           await AsyncStorage.removeItem('bannerMessage');
           await AsyncStorage.removeItem('bannerType');
           setTimeout(() => {
@@ -138,7 +131,9 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.signInButtonText}>Sign In</Text>
         </TouchableOpacity>
         {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
-
+        <TouchableOpacity onPress={() => navigation.replace('UserInfoScreen')}>
+          <Text style={styles.link}>Sign up</Text>
+        </TouchableOpacity>
       </View>
     );
   }

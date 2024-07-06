@@ -13,10 +13,11 @@ const UserDetailsScreen = ({ navigation }) => {
         country: '',
         city: '',
         bio: '',
-        birthday: new Date(),
+        birthday: new Date(), 
         hobbies: [],
         skills: [],
     });
+    
     const [showDatePicker, setShowDatePicker] = useState(false);
 
     const [countries, setCountries] = useState([]);
@@ -95,9 +96,9 @@ const UserDetailsScreen = ({ navigation }) => {
     };
 
     const onChangeDate = (event, selectedDate) => {
-        const currentDate = selectedDate || userInfo.birthday;
+        const currentDate = selectedDate || new Date(userInfo.birthday);
         setShowDatePicker(false);
-        setUserInfo({ ...userInfo, birthday: currentDate.toISOString() });
+        setUserInfo({ ...userInfo, birthday: currentDate });
     };
 
     return (
@@ -147,12 +148,12 @@ const UserDetailsScreen = ({ navigation }) => {
 
             <Text style={styles.inputHeader}>Birthday</Text>
             <TouchableOpacity style={styles.date} onPress={() => setShowDatePicker(true)}>
-                    <Text>{userInfo.birthday.toDateString()}</Text>
-                </TouchableOpacity>
+                <Text>{new Date(userInfo.birthday).toDateString()}</Text>
+            </TouchableOpacity>
             {showDatePicker && (
                 <DateTimePicker
                     testID="dateTimePicker"
-                    value={userInfo.birthday}
+                    value={new Date(userInfo.birthday)}
                     mode="date"
                     display="default"
                     onChange={onChangeDate}

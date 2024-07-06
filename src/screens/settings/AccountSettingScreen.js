@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db } from '../../api/firebaseConfig';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { deleteUser } from 'firebase/auth';
 import colors from '../../../assets/colors/colors';
 
 const AccountSettingScreen = ({ route, navigation }) => {
@@ -22,6 +23,40 @@ const AccountSettingScreen = ({ route, navigation }) => {
     } catch (error) {
       console.error('Error saving account settings:', error);
     }
+  };
+
+  const deleteAccount = async () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const user = auth.currentUser;
+
+              // Delete user data from Firestore
+              const userDocRef = doc(db, 'users', user.uid);
+              await deleteDoc(userDocRef);
+
+              // Delete user account from Firebase Authentication
+              await deleteUser(user);
+
+              // Clear AsyncStorage
+              await AsyncStorage.clear();
+
+              navigation.navigate('Profile');
+            } catch (error) {
+              console.error('Error deleting account:', error);
+              Alert.alert('Error', 'Failed to delete account. Please try again.');
+            }
+          }
+        }
+      ]
+    );
   };
 
   // const pickImage = async () => {
@@ -84,6 +119,9 @@ const AccountSettingScreen = ({ route, navigation }) => {
       />
       <TouchableOpacity style={styles.button} onPress={saveAccountData}>
         <Text style={styles.buttonText}>Save Changes</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={deleteAccount}>
+        <Text style={styles.buttonText}>Delete Account</Text>
       </TouchableOpacity>
     </ScrollView>
   );
