@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, TextInput, Button, StyleSheet, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db } from '../../api/firebaseConfig';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
@@ -10,6 +10,7 @@ const AccountSettingScreen = ({ route, navigation }) => {
   const { userInfo } = route.params;
   const [displayName, setDisplayName] = useState(userInfo.displayName || '');
   const [bio, setBio] = useState(userInfo.bio || '');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const saveAccountData = async () => {
     try {
@@ -35,6 +36,7 @@ const AccountSettingScreen = ({ route, navigation }) => {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
+            setIsDeleting(true);
             try {
               const user = auth.currentUser;
 
@@ -49,55 +51,18 @@ const AccountSettingScreen = ({ route, navigation }) => {
               await AsyncStorage.clear();
 
               navigation.navigate('Profile');
+              Alert.alert('Account Deleted', 'Your account has been successfully deleted.');
             } catch (error) {
               console.error('Error deleting account:', error);
               Alert.alert('Error', 'Failed to delete account. Please try again.');
+            } finally {
+              setIsDeleting(false);
             }
           }
         }
       ]
     );
   };
-
-  // const pickImage = async () => {
-  //   const result = await launchImageLibrary({ mediaType: 'photo', quality: 1 });
-
-  //   if (result.didCancel) {
-  //     console.log('User cancelled image picker');
-  //   } else if (result.errorMessage) {
-  //     console.log('ImagePicker Error: ', result.errorMessage);
-  //   } else if (result.assets && result.assets.length > 0) {
-  //     const source = { uri: result.assets[0].uri };
-  //     uploadImage(source.uri);
-  //   }
-  // };
-
-  // const uploadImage = async (uri) => {
-  //   const uploadUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-  //   const filename = uploadUri.substring(uploadUri.lastIndexOf('/') + 1);
-  //   const storageRef = storage().ref(`profile_pictures/${filename}`);
-
-  //   try {
-  //     await storageRef.putFile(uploadUri);
-  //     const downloadURL = await storageRef.getDownloadURL();
-
-  //     if (auth.currentUser) {
-  //       await updateProfile(auth.currentUser, { photoURL: downloadURL });
-  //       console.log('Photo URL updated!');
-
-  //       // Update Firestore user document
-  //       const userDocRef = doc(db, 'users', auth.currentUser.uid);
-  //       await setDoc(userDocRef, { photoURL: downloadURL }, { merge: true });
-
-  //       // Update local state and AsyncStorage
-  //       const updatedUserData = { ...currentUser, photoURL: downloadURL };
-  //       setCurrentUser(updatedUserData);
-  //       await saveUserData(updatedUserData);
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
 
   return (
     <ScrollView style={styles.container}>
@@ -120,8 +85,17 @@ const AccountSettingScreen = ({ route, navigation }) => {
       <TouchableOpacity style={styles.button} onPress={saveAccountData}>
         <Text style={styles.buttonText}>Save Changes</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={deleteAccount}>
-        <Text style={styles.buttonText}>Delete Account</Text>
+      <View style={styles.footer}>
+        <Text>Have problems with your account? </Text>
+        <Text style={styles.link} onPress={() => navigation.navigate('ContactSupport')}>Contact Support</Text>
+        <Text> or</Text>
+      </View>
+      <TouchableOpacity onPress={deleteAccount} disabled={isDeleting} style={styles.delete}>
+        {isDeleting ? (
+          <ActivityIndicator size="small" color={colors.primary} />
+        ) : (
+          <Text style={styles.link}>Delete Account</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -155,6 +129,21 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     fontSize: 18,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: "5%"
+  },
+  deleteText: {
+    color: 'red',
+  },
+  link: {
+    color: '#0000ff',
+  },
+  delete: {
+    alignItems: 'center',
+    marginTop: 10,
   },
 });
 

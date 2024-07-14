@@ -131,9 +131,9 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.signInButtonText}>Sign In</Text>
         </TouchableOpacity>
         {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
-        <TouchableOpacity onPress={() => navigation.replace('UserInfoScreen')}>
+        {/* <TouchableOpacity onPress={() => navigation.replace('UserInfoScreen')}>
           <Text style={styles.link}>Sign up</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     );
   }

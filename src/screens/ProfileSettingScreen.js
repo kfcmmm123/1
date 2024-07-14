@@ -13,7 +13,6 @@ import EditInterestScreen from './settings/EditInterestScreen';
 
 const Stack = createStackNavigator();
 
-// 以下是一个 stack navigator，包含了上面的三个 sub screens
 const ProfileSettingsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState({
@@ -33,7 +32,6 @@ const ProfileSettingsScreen = ({ navigation }) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setProfileData(data);
-          // Optionally update local storage if needed
           await AsyncStorage.setItem('@user_data', JSON.stringify(data));
         } else {
           Alert.alert('Error', 'No profile data found.');
@@ -47,7 +45,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      await AsyncStorage.removeItem('@user_data'); // Clear stored user data
+      await AsyncStorage.removeItem('@user_data');
       await AsyncStorage.setItem('resetFirstLoad', 'true');
       await AsyncStorage.setItem('bannerMessage', 'You have signed out!');
       await AsyncStorage.setItem('bannerType', 'success');
@@ -61,23 +59,31 @@ const ProfileSettingsScreen = ({ navigation }) => {
 
   function ProfileHomeScreen() {
     return (
-      <ScrollView style={styles.container}>
-        <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('AccountSettingScreen', { userInfo: profileData })}>
-          <Text style={styles.sectionTitle}>Account Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('PersonalDataSettingScreen', { userInfo: profileData })}>
-          <Text style={styles.sectionTitle}>Personal Data Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('SkillSettingScreen', { userInfo: profileData })}>
-          <Text style={styles.sectionTitle}>Skill Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('EditInterestScreen', { userInfo: profileData })}>
-          <Text style={styles.sectionTitle}>Interests Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.SignOutbutton} onPress={handleSignOut}>
-          <Text style={styles.buttonText}>Sign Out</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      <View style={styles.container}>
+        <ScrollView>
+          <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('AccountSettingScreen', { userInfo: profileData })}>
+            <Text style={styles.sectionTitle}>Account Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('PersonalDataSettingScreen', { userInfo: profileData })}>
+            <Text style={styles.sectionTitle}>Personal Data Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('SkillSettingScreen', { userInfo: profileData })}>
+            <Text style={styles.sectionTitle}>Skill Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.tabs} onPress={() => navigation.navigate('EditInterestScreen', { userInfo: profileData })}>
+            <Text style={styles.sectionTitle}>Interests Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.SignOutbutton} onPress={handleSignOut}>
+            <Text style={styles.buttonText}>Sign Out</Text>
+          </TouchableOpacity>
+        </ScrollView>
+        <View style={styles.bottomContainer}>
+
+          <Text style={styles.bottomText}>Copyright © 2024 VolunTrack Org. All Rights Reserved</Text>
+          {/* <Text style={styles.bottomText}></Text> */}
+          <Text style={styles.copyright}>©VolunTrack Org. is a registered Canadian Not-for-profit #716778212</Text>
+        </View>
+      </View>
     );
   }
 
@@ -131,7 +137,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: '#000', // 颜色调整，确保能在背景上看清楚
+    color: '#000',
     alignSelf: 'flex-start',
     marginBottom: 5,
     marginTop: 5,
@@ -162,6 +168,21 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     fontSize: 18,
+  },
+  bottomContainer: {
+    alignItems: 'center',
+    marginBottom: 50,
+  },
+  copyright: {
+    marginTop: 5,
+    color: 'grey',
+    fontSize: 11.5,
+    textAlign: 'center',
+  },
+  bottomText: {
+    color: 'grey',
+    fontSize: 11.5,
+    textAlign: 'center',
   },
 });
 
