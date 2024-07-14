@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, StyleSheet, Linking, Image, Alert } from 'react-native';
-import { createUserWithEmailAndPassword, sendEmailVerification  } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth, db } from '../api/firebaseConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import colors from '../../assets/colors/colors';
@@ -25,12 +25,12 @@ const SignUpScreen = ({ navigation }) => {
       Alert.alert('Error', 'You must agree to the terms and conditions to sign up.');
       return;
     }
-    
+
     if (!isEmailValid) {
       Alert.alert('Error', 'Email not valid. Please enter a valid email address.');
       return;
     }
-  
+
     createUserWithEmailAndPassword(auth, email, password)
       .then(async (userCredentials) => {
         // Create a document in Firestore after account creation
@@ -66,8 +66,7 @@ const SignUpScreen = ({ navigation }) => {
             Alert.alert('Error', 'Error signing up: ' + error.message);
         }
       });
-
-  }; 
+  };
 
   // const resendVerificationEmail = () => {
   //   if (auth.currentUser && !auth.currentUser.emailVerified) {
@@ -101,7 +100,7 @@ const SignUpScreen = ({ navigation }) => {
       <Text style={styles.header}>Create Account</Text>
 
       <Text style={styles.inputHeader}>Your Email</Text>
-      
+
       <View style={styles.inputField}>
         <TextInput
           placeholder="Email"
@@ -121,7 +120,7 @@ const SignUpScreen = ({ navigation }) => {
           />
         )}
       </View>
-      
+
       <Text style={styles.inputHeader}>Password</Text>
 
       <View style={styles.inputField}>
@@ -132,26 +131,26 @@ const SignUpScreen = ({ navigation }) => {
           secureTextEntry={passwordVisibility} // Toggles the text visibility
           style={styles.input}
         />
-        <TouchableOpacity 
-          style={styles.visibilityIcon} 
+        <TouchableOpacity
+          style={styles.visibilityIcon}
           onPress={togglePasswordVisibility}
         >
-          {passwordVisibility ? 
+          {passwordVisibility ?
             <Image source={require('../../assets/icons/hidePassword.png')} style={styles.illustration} />
-            : 
+            :
             <Image source={require('../../assets/icons/showPassword.png')} style={styles.illustration} />
           }
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.termsWrapper}>
         <TouchableOpacity onPress={() => setAgreeToTerms(!agreeToTerms)} style={styles.checkbox}>
           {agreeToTerms ? <Text style={styles.checkboxText}>✓</Text> : null}
         </TouchableOpacity>
         <Text style={styles.termsText}>
-          I agree to the 
+          I agree to the
           <Text style={styles.link} onPress={() => openURL('https://policies.google.com/terms?hl=en-US')}> Terms & Conditions </Text>
-          and 
+          and
           <Text style={styles.link} onPress={() => openURL('https://policies.google.com/privacy?hl=en-US')}> Privacy Policy</Text>
         </Text>
       </View>
@@ -160,10 +159,10 @@ const SignUpScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>Create account</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.googleButton}>
+      {/* <TouchableOpacity style={styles.googleButton}>
         <Image source={require('../../assets/icons/googleSignIn.png')} style={styles.icon} />
         <Text style={styles.googleButtonText}>Sign up with Google</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <View style={styles.footer}>
         <Text>Already have an account? </Text>
@@ -194,7 +193,7 @@ const styles = StyleSheet.create({
     color: colors.text, // Use your color scheme
     marginTop: 40,
   },
-  inputHeader:{
+  inputHeader: {
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'left',
@@ -272,9 +271,9 @@ const styles = StyleSheet.create({
     color: '#0000ff',
     fontSize: 18,
   },
-  icon:{
-    width: 20, 
-    height: 20, 
+  icon: {
+    width: 20,
+    height: 20,
     marginHorizontal: 10,
   },
   footer: {
