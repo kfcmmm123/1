@@ -96,10 +96,15 @@ const UserDetailsScreen = ({ navigation }) => {
     };
 
     const onChangeDate = (event, selectedDate) => {
-        const currentDate = selectedDate || new Date(userInfo.birthday);
-        setShowDatePicker(false);
-        setUserInfo({ ...userInfo, birthday: currentDate });
+        if (event.type === "set") { // This checks if the user confirmed the date
+            const currentDate = selectedDate || new Date(userInfo.birthday);
+            setShowDatePicker(false);
+            setUserInfo({ ...userInfo, birthday: currentDate });
+        } else if (event.type === "dismissed") {
+            setShowDatePicker(false); // Hide the picker if the user dismissed it
+        }
     };
+    
 
     return (
         <ScrollView contentContainerStyle={styles.container}>

@@ -90,9 +90,13 @@ const PersonalDataSettingScreen = ({ route, navigation }) => {
   };
 
   const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || birthday;
-    setShowDatePicker(false);
-    setBirthday(currentDate);
+    if (event.type === 'set') {
+      const currentDate = selectedDate || birthday;
+      setShowDatePicker(false);
+      setBirthday(currentDate);
+    } else {
+      setShowDatePicker(false);
+    }
   };
 
   return (

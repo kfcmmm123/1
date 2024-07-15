@@ -50,6 +50,10 @@ const AccountSettingScreen = ({ route, navigation }) => {
               // Clear AsyncStorage
               await AsyncStorage.clear();
 
+              await AsyncStorage.setItem('bannerMessage', 'You have deleted your account!');
+              await AsyncStorage.setItem('bannerType', 'error');
+              await AsyncStorage.setItem('resetFirstLoad', 'true');
+
               navigation.navigate('Profile');
               Alert.alert('Account Deleted', 'Your account has been successfully deleted.');
             } catch (error) {
@@ -140,6 +144,7 @@ const styles = StyleSheet.create({
   },
   link: {
     color: '#0000ff',
+    textDecorationLine: 'underline',
   },
   delete: {
     alignItems: 'center',

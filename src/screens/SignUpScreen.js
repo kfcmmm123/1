@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, StyleSheet, Linking, Image, Alert } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, StyleSheet, Linking, Image, Alert, Modal, ActivityIndicator } from 'react-native';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth, db } from '../api/firebaseConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -19,6 +19,7 @@ const SignUpScreen = ({ navigation }) => {
   const [passwordVisibility, setPasswordVisibility] = useState(true); // Password initially hidden
   const [isEmailValid, setIsEmailValid] = useState(null); // null, true, or false
   const [verificationEmailSent, setVerificationEmailSent] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
 
   const handleSignUp = async () => {
     if (!agreeToTerms) {
@@ -170,6 +171,15 @@ const SignUpScreen = ({ navigation }) => {
           <Text style={styles.link}>Log in</Text>
         </TouchableOpacity>
       </View>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={loading}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      </Modal>
       {/* {verificationEmailSent && (
         <TouchableOpacity style={styles.resendButton} onPress={resendVerificationEmail}>
           <Text style={styles.resendButtonText}>Resend Verification Email</Text>
@@ -242,9 +252,6 @@ const styles = StyleSheet.create({
   checkboxText: {
     fontWeight: 'bold',
   },
-  link: {
-    color: '#0000ff',
-  },
   button: {
     backgroundColor: colors.primary,
     paddingVertical: 12,
@@ -296,6 +303,14 @@ const styles = StyleSheet.create({
   resendButtonText: {
     color: '#ffffff',
     fontSize: 16,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
