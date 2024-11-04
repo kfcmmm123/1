@@ -8,7 +8,7 @@ export default () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const searchApi = async (searchTerm) => {
-    setErrorMessage(''); // Clear previous errors
+    setErrorMessage(''); 
     try {
       const db = getFirestore(app);
       
@@ -18,7 +18,7 @@ export default () => {
       const firestoreData = firestoreSnapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id,
-        source: 'Firestore' // Tag to identify the source
+        source: 'Firestore' 
       }));
 
       // Yelp API call
@@ -33,7 +33,7 @@ export default () => {
       });
       const yelpData = yelpResponse.data.businesses.map(business => ({
         ...business,
-        source: 'Yelp' // Tag to identify the source
+        source: 'Yelp' 
       }));
 
       // Merge Firestore and Yelp results
@@ -41,7 +41,7 @@ export default () => {
       setResults(combinedResults);
     } catch (error) {
       console.error('Error during search:', error);
-      setErrorMessage('Something went wrong...'); // Set error message only after a failure
+      setErrorMessage('Something went wrong...'); 
     }
   };
 

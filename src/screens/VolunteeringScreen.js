@@ -1,10 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { Alert, StyleSheet, Text, TextInput, View, Image, ScrollView, Modal, Linking, Button, TouchableOpacity } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, View, Image, ScrollView, Modal, Linking, Button, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { Picker } from '@react-native-picker/picker'
 import MapView, { Marker } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Clipboard } from 'react-native';
+import { db } from '../api/firebaseConfig';
+import { collection, addDoc } from 'firebase/firestore';
 
 import colors from '../../assets/colors/colors';
 
@@ -178,6 +181,49 @@ const VolunteeringScreen = ({ route, navigation }) => {
     useEffect(() => {
         storeStatus();
     }, [statusValue]);
+
+    const [report, setReport] = useState('');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [problemType, setProblemType] = useState('');
+    const [showReport, setShowReport] = useState(false);
+
+    const handleReport = async () => {
+        // Check if any field is empty
+        if (!name || !email || !problemType || !report) {
+            Alert.alert(
+                'Incomplete Form',
+                'Please fill out all fields before submitting.',
+                [{ text: 'OK' }]
+            );
+            return; // Exit the function to prevent submission
+        }
+    
+        try {
+            // Add the report to a new Firestore collection called "Reports"
+            await addDoc(collection(db, 'Reports'), {
+                name,
+                email,
+                problemType,
+                report,
+                itemId: itemData.id, 
+                itemName: itemData.name,
+                timestamp: new Date() 
+            });
+    
+            Alert.alert('Success', 'Your report has been submitted.', [{ text: 'OK' }]);
+    
+            // Reset fields after submission
+            setName('');
+            setEmail('');
+            setProblemType('');
+            setReport('');
+            setShowReport(false);
+        } catch (error) {
+            console.error('Error adding document: ', error);
+            Alert.alert('Error', 'There was an issue submitting your report. Please try again.', [{ text: 'OK' }]);
+        }
+    };
     
     const handleBookmark = async () => {
         const newBookmarkStatus = !isBookmarked;
@@ -217,13 +263,23 @@ const VolunteeringScreen = ({ route, navigation }) => {
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity onPress={handleBookmark}>
-                    <Ionicons 
-                        name={isBookmarked ? 'bookmark' : 'bookmark-outline'} 
-                        size={25} 
-                        color={colors.primary}
-                    />
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <TouchableOpacity onPress={() => setShowReport(true)}>
+                        <Ionicons 
+                            name="alert-circle-outline" // Replace this with the desired icon name
+                            size={25} 
+                            color={colors.primary} // Replace with the desired color
+                            style={{marginRight: 15}}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleBookmark} style={{ marginRight: 10 }}>
+                        <Ionicons 
+                            name={isBookmarked ? 'bookmark' : 'bookmark-outline'} 
+                            size={25} 
+                            color={colors.primary}
+                        />
+                    </TouchableOpacity>
+                </View>
             ),
         });
     }, [isBookmarked, navigation]);
@@ -483,6 +539,65 @@ const VolunteeringScreen = ({ route, navigation }) => {
                         <Button title="Close" onPress={() => setApplyModalVisible(false)} />
                     </View>
                 </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={showReport} // Controlled by applyModalVisible
+                onRequestClose={() => setShowReport(false)}
+            >
+                <KeyboardAvoidingView behavior="padding" style={styles.fullScreenModalView}>
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => setShowReport(false)}>
+                            <Text style={styles.cancelText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.headerTitle}>Report a Problem</Text>
+                        <TouchableOpacity onPress={handleReport}>
+                            <Text style={styles.sendText}>Send</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <Text style={styles.problem}>Problem Details</Text>
+                    <Text style={styles.problemDetail}>Type of Problem</Text>
+                    <View style={styles.picker}>
+                        <Picker
+                            selectedValue={problemType}
+                            onValueChange={(itemValue) => setProblemType(itemValue)}
+                        >
+                            {problemType === '' && <Picker.Item label="Problem Type" value="" />}
+                            <Picker.Item label="Bug" value="Bug" />
+                            <Picker.Item label="Feedback" value="Feedback" />
+                            <Picker.Item label="Feature Request" value="Feature Request" />
+                            <Picker.Item label="Copyrights" value="Copyrights" />
+                            <Picker.Item label="Other" value="Other" />
+                        </Picker>
+                    </View>
+                    <Text style={styles.problemDetail}>Problem Description</Text>
+                    <TextInput
+                        style={[styles.input, styles.textArea]}
+                        placeholder="What's the problem..."
+                        multiline
+                        value={report}
+                        onChangeText={setReport}
+                    />
+
+                    <Text style={styles.problem}>Contact Info</Text>
+                    <Text style={styles.problemDetail}>Name</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter your name"
+                        value={name}
+                        onChangeText={setName}
+                    />
+                    <Text style={styles.problemDetail}>Email</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter your email"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                    />
+                </KeyboardAvoidingView>
             </Modal>
             
             <View style={styles.row}>
@@ -915,6 +1030,60 @@ const styles = StyleSheet.create ({
         marginTop: 5,
         fontSize: 12,
     },
+
+    //report a problem page
+    fullScreenModalView: {
+        flex: 1,
+        backgroundColor: '#fff',
+        padding: 20
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20
+    },
+    cancelText: {
+        color: 'red',
+        fontSize: 16
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+    sendText: {
+        color: 'green',
+        fontSize: 16
+    },
+    problem: {
+        fontSize: 20,
+        marginVertical: 10,
+    },
+    problemDetail: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    picker: {
+        justifyContent: 'center',
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        backgroundColor: '#f9f9f9',
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 15,
+        fontSize: 16
+    },
+    textArea: {
+        height: 200,
+        textAlignVertical: 'top'
+    }
 })
 
 export default VolunteeringScreen;
