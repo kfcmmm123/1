@@ -47,7 +47,7 @@ const BottomNavigator = () => {
 
           }
         >
-            <BottomTab.Screen name = "VolunTrack" component= {HomeScreen} options ={{
+            {/* <BottomTab.Screen name = "VolunTrack" component= {HomeScreen} options ={{
                 tabBarIcon: ({focused}) => (
                     <View style = {{alignItems: 'center', justifyContent: 'center', top: 10}}>
                         <Image
@@ -107,7 +107,7 @@ const BottomNavigator = () => {
                         />
                     </View>
                 )
-            }}/>
+            }}/> */}
             <BottomTab.Screen name = "User" component= {UserScreen} options ={{
                 tabBarIcon: ({focused}) => (
                     <View style = {{alignItems: 'center', justifyContent: 'center', top: 10}}>

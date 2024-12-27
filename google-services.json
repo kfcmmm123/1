@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "348051927128",
+    "firebase_url": "https://volun-track-default-rtdb.firebaseio.com",
+    "project_id": "volun-track",
+    "storage_bucket": "volun-track.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348051927128:android:95049fdce51c975a5c1a2d",
+        "android_client_info": {
+          "package_name": "com.leoyin.voluntrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "348051927128-c9qruug5m64785ti2haf9n2l5j2m1soo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAI71n-fMqmFWPCZrJQ2TNeiNq2S90IY94"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "348051927128-c9qruug5m64785ti2haf9n2l5j2m1soo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "348051927128-bu9f23bbv9o5m05rmrck3c04o3tkujcj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.leoyin.voluntrack",
+                "app_store_id": "6444923783"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

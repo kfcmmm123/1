@@ -6,8 +6,9 @@ const ResultsDetail = ({ result }) => {
     <View style={styles.container}>
       <Image style={styles.image} source={{ uri: result.image_url }} />
       <Text style={styles.name}>{result.name}</Text>
-      <Text>{result.location.address1}</Text> 
-      <Text>{result.rating} Stars, {result.review_count} Reviews</Text>
+      <Text>{result.location}</Text>
+      <Text>{result.hours}</Text>
+      <Text>{`${result.rating} Stars, ${result.review_count} Reviews`}</Text>
       <Text>Phone: {result.display_phone}</Text>
     </View>
   );
@@ -15,20 +16,19 @@ const ResultsDetail = ({ result }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginLeft: 15
+    marginLeft: 15,
   },
   image: {
     width: 250,
     height: 120,
     borderRadius: 4,
-    marginBottom: 5
+    marginBottom: 5,
   },
   name: {
     marginTop: 3,
     fontWeight: 'bold',
     fontFamily: "HelveticaNeue",
-    // color: "#52575D"
-  }
+  },
 });
 
 export default ResultsDetail;

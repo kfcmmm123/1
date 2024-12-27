@@ -1,22 +1,20 @@
+import { EvilIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
-
 import colors from '../../assets/colors/colors';
-import { EvilIcons } from '@expo/vector-icons';
-
 
 const MailSearchBar = ({term, onTermChange, onTermSubmit}) => {
     return (
         <View style = {styles.backgroundStyle}>
             <EvilIcons name = "search" style = {styles.iconStyle} />
             <TextInput
-               autoCapitalize = "none"
-               autoCorrect = {false}
-               style = {styles.inputStyle}
-               placeholder = "Search mail" placeholderTextColor = 'gray'
-               value = {term}
-               onChangeText = {onTermChange}
-               onEndEditing = {onTermSubmit}
+            autoCapitalize = "none"
+            autoCorrect = {false}
+            style = {styles.inputStyle}
+            placeholder = "Search mail" placeholderTextColor = 'gray'
+            value = {term}
+            onChangeText = {onTermChange}
+            onEndEditing = {onTermSubmit}
             />
         </View>
     );
@@ -24,12 +22,16 @@ const MailSearchBar = ({term, onTermChange, onTermSubmit}) => {
 
 const styles = StyleSheet.create({
     backgroundStyle: {
-        backgroundColor: colors.background,
+        backgroundColor: '#FFF',
         height: 40,
         borderRadius: 40,
-        marginHorizontal: 30,
+        width: '90%',
+        alignSelf: 'center',
         flexDirection: 'row',
-        marginBottom: 10
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: colors.primary,
+        borderRadius: 10,
     },
 
     inputStyle: {
@@ -41,7 +43,7 @@ const styles = StyleSheet.create({
         fontSize: 25,
         alignSelf: 'center',
         color: colors.primary,
-        marginHorizontal: 10, 
+        marginHorizontal: 10,
     }
 });
 

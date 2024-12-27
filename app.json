@@ -2,7 +2,7 @@
   "expo": {
     "name": "VolunTrack",
     "slug": "voluntrack",
-    "version": "1.0.2",
+    "version": "3.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -18,11 +18,13 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.leoyin.voluntrack",
-      "buildNumber": "3"
+      "buildNumber": "21"
     },
     "android": {
       "package": "com.leoyin.voluntrack",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
@@ -32,6 +34,18 @@
     "web": {
       "favicon": "./assets/icon.png"
     },
+    "plugins": [
+      "@react-native-firebase/app",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      "expo-font"
+    ],
     "extra": {
       "eas": {
         "projectId": "00ab2240-c3a4-4974-87cf-2d41f65b9b0e"
