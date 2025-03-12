@@ -253,6 +253,26 @@ const VolunteeringScreen = ({ route, navigation }) => {
         }
     };
 
+    const storeOngoingStatus = async () => {
+        try {
+            const status = 'Ongoing';
+            const updatedItemData = { ...itemData, status: status }; // Add 'status' to your task object
+            await AsyncStorage.setItem(`@task_status_${itemData.id}`, JSON.stringify(updatedItemData)); // Store the entire task with the status
+        } catch (error) {
+            console.error('Error storing task status:', error);
+        }
+    };
+
+    const storeCompletedStatus = async () => {
+        try {
+            const status = 'Completed';
+            const updatedItemData = { ...itemData, status: status }; // Add 'status' to your task object
+            await AsyncStorage.setItem(`@task_status_${itemData.id}`, JSON.stringify(updatedItemData)); // Store the entire task with the status
+        } catch (error) {
+            console.error('Error storing task status:', error);
+        }
+    };
+
     return (
         <View style={styles.container}>
             <ScrollView
@@ -275,6 +295,12 @@ const VolunteeringScreen = ({ route, navigation }) => {
                         />
                     </TouchableOpacity>
                 </View>
+                <TouchableOpacity onPress={storeOngoingStatus}>
+                    <Text>Set Ongoing Status</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={storeCompletedStatus}>
+                    <Text>Set Completed Status</Text>
+                </TouchableOpacity>
                 <Text style={styles.name}>{itemData.name}</Text>
                 <View style={styles.organization}>
                     <Image source={require('../../../assets/name.png')} style={styles.organizationIcon} />
@@ -458,7 +484,7 @@ const styles = StyleSheet.create({
     timeLocation: {
         flexDirection: 'column',
         justifyContent: 'flex-start',
-        marginBottom: 20,
+        marginVertical: 20,
     },
     title: {
         fontSize: 20,

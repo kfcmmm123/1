@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Image, StyleSheet, View, Text } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import your screen components
@@ -24,6 +24,7 @@ import UserInfoScreen from './src/screens/UserInfoScreen';
 import UserInterestsScreen from './src/screens/UserInterestsScreen';
 import EditInterestScreen from './src/screens/EditInterestScreen';
 import EditCityScreen from './src/screens/EditCityScreen';
+import ActivityScreen from './src/screens/NewVersion/ActivityScreen';
 
 import colors from './assets/colors/colors';
 
@@ -65,25 +66,25 @@ const TabNavigator = () => {
           let icon;
           switch (route.name) {
             case 'Home':
-              icon = focused ? 'home' : 'home-outline';
-              break;
-            case 'Saved':
-              icon = focused ? 'save' : 'save-outline';
+              icon = 'home';
               break;
             case 'Activity':
-              icon = focused ? 'today' : 'today-outline';
+              icon = 'checklist';
+              break;
+            case 'Contact':
+              icon = 'mail';
               break;
             case 'Account':
-              icon = focused ? 'person' : 'person-outline';
+              icon = 'person';
               break;
           }
-          return <Ionicons name={icon} size={25} color={'#884EFE'} />;
+          return <Octicons name={icon} size={25} color={focused ? '#884EFE' : '#B0A7F1'} />;
         },
       })}
     >
       <Tab.Screen name='Home' component={HomepageScreen} />
-      <Tab.Screen name='Saved' component={SearchScreen} />
-      <Tab.Screen name="Activity" component={MailStackScreen} />
+      <Tab.Screen name='Activity' component={ActivityScreen} />
+      <Tab.Screen name="Contact" component={MailStackScreen} />
       <Tab.Screen name='Account' component={SignInUpScreen} />
     </Tab.Navigator>
   );

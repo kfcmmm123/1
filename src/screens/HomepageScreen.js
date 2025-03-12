@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { StatusBar, ScrollView, Text, TouchableOpacity, View, Image, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import useSearchApi from '../hooks/useResults'; 
+import useSearchApi from '../hooks/useResults';
 
 import colors from '../../assets/colors/colors';
 import HomepageSearchBar from '../components/HomepageSearchBar';
@@ -11,16 +11,10 @@ import ResultsList from '../components/ResultsList';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const HomepageScreen = ({ navigation }) => {
-    const [term, setTerm] = useState(''); 
+    const [term, setTerm] = useState('');
     const [selectedCity, setSelectedCity] = useState('');
     const [searchApi, results, errorMessage] = useSearchApi();
     const [filteredResults, setFilteredResults] = useState([]);
-
-    const [isLoading, setIsLoading] = useState(false);
-
-    const initialLoadRef = useRef(true);
-
-    const [currentUser, setCurrentUser] = useState(null);
 
     const [refreshing, setRefreshing] = useState(false);
 
@@ -43,64 +37,46 @@ const HomepageScreen = ({ navigation }) => {
         return filters.join(' | ');
     };
 
-    const refreshResults = useCallback(() => {
+    const refreshResults = useCallback(async () => {
         setRefreshing(true);
-        searchApi(term, selectedCity).then(() => {
-            setRefreshing(false);
-        });
+        await searchApi(term, selectedCity);
+        setRefreshing(false);
     }, [term, selectedCity, searchApi]);
 
     useFocusEffect(
         useCallback(() => {
-            const fetchUserData = async () => {
-                const storedUserData = await AsyncStorage.getItem('@user_data');
-                if (storedUserData) {
-                    const userData = JSON.parse(storedUserData);
-                    setCurrentUser(userData);
-                } else {
-                }
-            };
-            fetchUserData();
-        }, [])
-    );
+            const fetchInitialData = async () => {
+                const [
+                    storedUserData,
+                    interestsFilter,
+                    startDateFilter,
+                    endDateFilter,
+                    cityFilter
+                ] = await Promise.all([
+                    AsyncStorage.getItem('@user_data'),
+                    AsyncStorage.getItem('@selectedInterests'),
+                    AsyncStorage.getItem('@selectedStartDate'),
+                    AsyncStorage.getItem('@selectedEndDate'),
+                    AsyncStorage.getItem('@selectedCity')
+                ]);
 
-    useFocusEffect(
-        useCallback(() => {
-            if (initialLoadRef.current) {
-                const performSearch = async () => {
-                    setIsLoading(true);
-                    await searchApi('volunteer', selectedCity);
-                    setIsLoading(false);
-                };
-                performSearch();
-                initialLoadRef.current = false;
-            }
-        }, [selectedCity])
-    );
+                if (storedUserData) setCurrentUser(JSON.parse(storedUserData));
 
-    useFocusEffect(
-        useCallback(() => {
-            const loadFilters = async () => {
-                const interestsFilter = await AsyncStorage.getItem('@selectedInterests');
-                const startDateFilter = await AsyncStorage.getItem('@selectedStartDate');
-                const endDateFilter = await AsyncStorage.getItem('@selectedEndDate');
-                const cityFilter = await AsyncStorage.getItem('@selectedCity');
-            
                 setSelectedCity(cityFilter || '');
                 setSelectedStartDate(startDateFilter || null);
                 setSelectedEndDate(endDateFilter || null);
                 setSelectedCategories(interestsFilter ? JSON.parse(interestsFilter) : []);
 
                 refreshResults();
-            };            
-            loadFilters();
+            };
+
+            fetchInitialData();
         }, [])
-      );
+    );
 
     useEffect(() => {
         refreshResults();
     }, [selectedCity, selectedStartDate, selectedEndDate, selectedCategories]);
-            
 
     const normalizeString = (inputString) => inputString.toLowerCase();
 
@@ -148,7 +124,6 @@ const HomepageScreen = ({ navigation }) => {
         }
 
         setFilteredResults(updatedResults);
-        console.log(selectedCity, selectedStartDate, selectedEndDate, selectedCategories)
     }, [selectedCity, term, results, selectedCategories, selectedStartDate, selectedEndDate]);
 
     const handleSearchSubmit = async () => {
@@ -171,8 +146,8 @@ const HomepageScreen = ({ navigation }) => {
         >
             <View style={styles.topBar}>
                 <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>Volunteer</Text>
                     <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
+                    <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>VolunTrack</Text>
                 </TouchableOpacity>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>
                     <TouchableOpacity>
@@ -192,15 +167,11 @@ const HomepageScreen = ({ navigation }) => {
             <Text style={styles.text}>{hasActiveFilters ? 'Filtered Results' : 'Recommended Jobs'}</Text>
             {(hasActiveFilters && !term) && (
                 <Text style={styles.filterSummary}>{filterText()}</Text>
-            )}            
-            {isLoading ? (
-                <ActivityIndicator style={{ margin: 30 }} size="large" color={colors.primary} />
-            ) : (
-                <ResultsList results={filteredResults} navigation={navigation} />
             )}
-            {!isLoading && filteredResults.length === 0 && (
+            {filteredResults.length === 0 && (
                 <Text style={styles.noResultsMessage}>No results found.</Text>
             )}
+            <ResultsList results={filteredResults} navigation={navigation} />
         </ScrollView>
     );
 }
@@ -229,12 +200,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginTop: 15,
-        marginLeft: 20,
+        marginLeft: 10,
         marginRight: 10,
     },
     icon: {
         width: 40,
         height: 40,
+        marginRight: 5,
     },
     noResultsMessage: {
         textAlign: 'center',

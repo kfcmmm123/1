@@ -55,7 +55,7 @@ const ResultsList = ({ title, results, navigation }) => {
       <TouchableOpacity onPress={handleBookmark} style={styles.bookmarkButton}>
         <View style={styles.bookmarkIcon}>
           <Ionicons
-            name={isBookmarked ? 'bookmark' : 'bookmark-outline'} 
+            name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
             size={18}
             color={'#884EFE'}
           />
@@ -68,7 +68,7 @@ const ResultsList = ({ title, results, navigation }) => {
     <View style={styles.container}>
       <FlatList
         showsVerticalScrollIndicator={false}
-        data={results}
+        data={results.slice(0, 10)}
         keyExtractor={(result) => result.id.toString()}
         renderItem={({ item }) => {
           const city = item.city || (item.location && item.location.city) || 'Unknown City';
@@ -76,12 +76,12 @@ const ResultsList = ({ title, results, navigation }) => {
           const imageSrc = getImageSource(item.image_url);
 
           return (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.resultItem}
               onPress={() => navigation.navigate('VolunteeringScreen', { itemData: item })}
             >
               {/* Top Part: Image with hours and bookmark */}
-              <ImageBackground 
+              <ImageBackground
                 source={imageSrc}
                 style={styles.backgroundImage}
               >
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.7)",
     paddingHorizontal: 5,
     paddingVertical: 3,
-    height: 30, 
+    height: 30,
     justifyContent: 'center', // Centers text vertically
   },
   hours: {
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: "rgba(255, 255, 255, 0.7)",
     width: 30,
-    height: 30, 
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
