@@ -27,6 +27,7 @@ const ActivityResultsList = ({ title, results, navigation }) => {
   const renderItem = (item) => {
     return (
       <TouchableOpacity
+        key={item.id}
         style={styles.resultItem}
         onPress={() => navigation.navigate('VolunteeringScreen', { itemData: item })}
       >

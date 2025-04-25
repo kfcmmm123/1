@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Image, StyleSheet, View, Text } from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { enableScreens } from 'react-native-screens';
 
 // Import your screen components
 import AboutUsScreen from './src/screens/AboutUsScreen';
@@ -85,13 +85,14 @@ const TabNavigator = () => {
       <Tab.Screen name='Home' component={HomepageScreen} />
       <Tab.Screen name='Activity' component={ActivityScreen} />
       <Tab.Screen name="Contact" component={MailStackScreen} />
-      <Tab.Screen name='Account' component={SignInUpScreen} />
+      <Tab.Screen name='Account' component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true); // Add a loading state
+  enableScreens();
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -196,14 +197,6 @@ export default function App() {
         <RootStack.Screen
           name="EditCityScreen"
           component={EditCityScreen}
-          options={{
-            headerShown: true,
-            title: 'Edit your location'
-          }}
-        />
-        <RootStack.Screen
-          name="Profile"
-          component={ProfileScreen}
           options={{
             headerShown: true,
             title: 'Edit your location'

@@ -1,14 +1,22 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, Button, Image, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import { auth, db } from '../api/firebaseConfig';
-import { onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { useFocusEffect } from '@react-navigation/native';
-import { doc, getDoc } from 'firebase/firestore';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
+import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import colors from '../../assets/colors/colors';
+
 import NotificationBanner from '../components/NotificationBanner'; // Adjust the path as necessary
+import PostScreen from './PostScreen';
+import BookmarkedScreen from './BookmarkedScreen';
+
+import { TouchableHighlight } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { AccountSettingScreen } from './ProfileSettingScreen';
 
 const ProfileScreen = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -17,158 +25,87 @@ const ProfileScreen = ({ navigation }) => {
   const firstLoad = useRef(true);
   const [bannerMessage, setBannerMessage] = useState('');
   const [bannerType, setBannerType] = useState('success');
-
-  useFocusEffect(
-    useCallback(() => {
-      const showBannerIfNeeded = async () => {
-        const bannerToShow = await AsyncStorage.getItem('bannerMessage');
-        if (bannerToShow) {
-          setBannerMessage(bannerToShow);
-          setBannerType(await AsyncStorage.getItem('bannerType') || 'success');
-          await AsyncStorage.removeItem('bannerMessage');
-          await AsyncStorage.removeItem('bannerType');
-        }
-      };
-
-      showBannerIfNeeded();
-    }, [])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      const resetStateIfNeeded = async () => {
-        const shouldReset = await AsyncStorage.getItem('resetFirstLoad');
-        if (shouldReset === 'true') {
-          firstLoad.current = true;
-          await AsyncStorage.removeItem('resetFirstLoad');
-        }
-  
-        if (firstLoad.current) {
-          setLoading(true);
-          fetchUserData();
-          firstLoad.current = false;
-        }
-      };
-  
-      resetStateIfNeeded();
-    }, [])
-  );
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      if (user) {
-        fetchUserData();
-      } else {
-        setCurrentUser(null); // Ensure user state is reset
-        setLoading(false); // Stop loading state
-        AsyncStorage.removeItem('@user_data'); // Optionally clear user data
-      }
-    });
-    
-    return () => unsubscribe(); // Correctly unsubscribe on component unmount
-  }, []);
-
-  useEffect(() => {
-    const checkForBanner = async () => {
-      const message = await AsyncStorage.getItem('bannerMessage');
-      const type = await AsyncStorage.getItem('bannerType');
-      if (message && type) {
-        setBannerMessage(message);
-        setBannerType(type);
-        // Clear the banner data after setting state
-        await AsyncStorage.removeItem('bannerMessage');
-        await AsyncStorage.removeItem('bannerType');
-      }
-    };
-
-    checkForBanner();
-  }, []);
+  const [completedTasksCount, setCompletedTasksCount] = useState(0);
 
   const fetchUserData = async () => {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
-          setCurrentUser(userData);
-          await AsyncStorage.setItem('@user_data', JSON.stringify(userData));
-        } else {
-          console.log("No user data available");
-        }
+    setLoading(true);
+    await fetchCompletedTasksCount();
+    const user = auth.currentUser;
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        setCurrentUser(docSnap.data());
+        await AsyncStorage.setItem('@user_data', JSON.stringify(docSnap.data()));
+      } else {
+        console.log("No user data available");
       }
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    } finally {
-      setLoading(false);
+    } else {
+      setCurrentUser(null);
+    }
+    setLoading(false);
+  };
+
+  const refreshUserData = async () => {
+    const user = auth.currentUser;
+    await fetchCompletedTasksCount();
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        setCurrentUser(docSnap.data());
+        await AsyncStorage.setItem('@user_data', JSON.stringify(docSnap.data()));
+      } else {
+        console.log("No user data available");
+      }
+    } else {
+      setCurrentUser(null);
     }
   };
+
+  const fetchCompletedTasksCount = async () => {
+    const count = await AsyncStorage.getItem('@completed_tasks_count');
+    setCompletedTasksCount(count ? JSON.parse(count) : 0);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const initiateDataFetch = async () => {
+        // Trigger fetch data only on the first load or if explicitly asked via AsyncStorage flag
+        const shouldReset = await AsyncStorage.getItem('resetFirstLoad');
+        if (firstLoad.current || shouldReset === 'true') {
+          await fetchUserData();
+          firstLoad.current = false;
+          if (shouldReset === 'true') {
+            await AsyncStorage.removeItem('resetFirstLoad');
+          }
+        }
+
+        // Manage the banner
+        const bannerToShow = await AsyncStorage.getItem('bannerMessage');
+        const bannerTypeToShow = await AsyncStorage.getItem('bannerType');
+
+        if (bannerToShow && bannerTypeToShow) {
+          setBannerMessage(bannerToShow);
+          setBannerType(bannerTypeToShow);
+
+          await AsyncStorage.removeItem('bannerMessage');
+          await AsyncStorage.removeItem('bannerType');
+          setTimeout(() => {
+            setBannerMessage(''); // Clear banner after showing
+          }, 3000); // Duration after which the banner should disappear
+        }
+      };
+
+      initiateDataFetch();
+    }, [])
+  );
+
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchUserData().finally(() => setRefreshing(false));
+    refreshUserData().finally(() => setRefreshing(false));
   }, []);
-
-  const saveUserData = async (userData) => {
-    try {
-      const jsonValue = JSON.stringify(userData);
-      await AsyncStorage.setItem('@user_data', jsonValue);
-    } catch (e) {
-      console.error('Failed to save user data', e);
-    }
-  };
-
-  const loadUserData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('@user_data');
-      console.log(jsonValue);
-      return jsonValue != null ? JSON.parse(jsonValue) : null;
-    } catch (e) {
-      console.error('Failed to load user data', e);
-      return null;
-    }
-  };
-
-  const pickImage = async () => {
-    const result = await launchImageLibrary({ mediaType: 'photo', quality: 1 });
-
-    if (result.didCancel) {
-      console.log('User cancelled image picker');
-    } else if (result.errorMessage) {
-      console.log('ImagePicker Error: ', result.errorMessage);
-    } else if (result.assets && result.assets.length > 0) {
-      const source = { uri: result.assets[0].uri };
-      uploadImage(source.uri);
-    }
-  };
-
-  const uploadImage = async (uri) => {
-    const uploadUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-    const filename = uploadUri.substring(uploadUri.lastIndexOf('/') + 1);
-    const storageRef = storage().ref(`profile_pictures/${filename}`);
-
-    try {
-      await storageRef.putFile(uploadUri);
-      const downloadURL = await storageRef.getDownloadURL();
-
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { photoURL: downloadURL });
-        console.log('Photo URL updated!');
-
-        // Update Firestore user document
-        const userDocRef = doc(db, 'users', auth.currentUser.uid);
-        await setDoc(userDocRef, { photoURL: downloadURL }, { merge: true });
-
-        // Update local state and AsyncStorage
-        const updatedUserData = { ...currentUser, photoURL: downloadURL };
-        setCurrentUser(updatedUserData);
-        await saveUserData(updatedUserData);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   if (loading) {
     return (
@@ -178,205 +115,300 @@ const ProfileScreen = ({ navigation }) => {
     );
   }
 
-  if (!currentUser) {
-    return (
-      <View style={styles.before}>
+  const HeaderControls = () => (
+    <>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => console.log('Add pressed')}
+      >
         <Image
-          source={require('../../assets/images/profileImage.png')}
-          style={styles.illustration}
+          source={require('../../assets/icons/SettingIcon.png')}
+          style={styles.icon}
         />
-        <Text style={styles.title}>LOG YOUR GROWTH</Text>
-        <Text style={styles.subtitle}>Navigate Your Volunteer Journey with Ease</Text>
-        <TouchableOpacity style={[styles.button, styles.signUpButton]} onPress={() => navigation.navigate('SignUpScreen')}>
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.signInButton]} onPress={() => navigation.navigate('SignInScreen')}>
-          <Text style={styles.signInButtonText}>Sign In</Text>
-        </TouchableOpacity>
-        {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
+      </TouchableOpacity>
 
+      <TouchableOpacity
+        style={styles.settingsButton}
+        onPress={() => navigation.navigate('ProfileSettingScreen')}
+      >
+        <Image
+          source={require('../../assets/icons/SettingIcon.png')}
+          style={styles.icon}
+        />
+      </TouchableOpacity>
+    </>
+  );
+
+  // 统计数字组件
+  const StatsOverlay = () => (
+    <View style={styles.statsOverlay}>
+      <View style={styles.statsContainer}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{completedTasksCount || 0}</Text>
+          <Text style={styles.statLabel}>Volunteer</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{currentUser.facilitated || 0}</Text>
+          <Text style={styles.statLabel}>Facilitated</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{currentUser.events || 0}</Text>
+          <Text style={styles.statLabel}>Events</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{currentUser.group || 0}</Text>
+          <Text style={styles.statLabel}>Group</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  const Tab = createMaterialTopTabNavigator();
+
+  function ConnectionScreen() {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={styles.noConnectionText}>
+          No connection available
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.scrollView}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}          
-        />
-      }
+    <View
+      style={{ flex: 1 }}
     >
-      <View style={styles.container}>
-        <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')}>
-            <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('ProfileSettingScreen')}>
-            <Image source={require('../../assets/icons/SettingIcon.png')} style={styles.icon} />
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.profileContainer}>
-          <Image
-            source={require('../../assets/icons/defaultUserImage.png') }  
-            style={styles.profileImage}
-          />
-          <Text style={styles.profileName}>{currentUser.displayName || 'Someone Awesome'}</Text>
+      {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
 
-          <Text style={styles.bio}>{currentUser.bio || 'This person is lazy, left no description..'}</Text>
-          
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.volunteered || 0}</Text>
-              <Text style={styles.statLabel}>Volunteered</Text>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ flexGrow: 1 }}  // Ensures the ScrollView content fills the space
+      >
+        <View style={styles.bannerContainer}>
+          {/* 顶部背景部分 - 根据用户设置动态显示 */}
+          {currentUser.backgroundImage ? (
+            <ImageBackground
+              source={{ uri: currentUser.backgroundImage }}
+              style={styles.headerBackground}
+            >
+              <HeaderControls />
+              <StatsOverlay />
+            </ImageBackground>
+          ) : (
+            <View style={[styles.headerBackground, styles.defaultBackground]}>
+              <HeaderControls />
+              <StatsOverlay />
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.facilitated || 0}</Text>
-              <Text style={styles.statLabel}>Facilitated</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.events || 0}</Text>
-              <Text style={styles.statLabel}>Events</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{currentUser.group || 0}</Text>
-              <Text style={styles.statLabel}>Group</Text>
-            </View>
+          )}
+
+          {/* 用户信息部分 */}
+          <View style={styles.profileSection}>
+            <GestureHandlerRootView>
+              <TouchableHighlight
+                style={styles.profileImageWrapper}
+                underlayColor="#ddd"
+                onPress={() => navigation.navigate('ProfileSettingScreen')}
+              >
+                <Image
+                  source={require('../../assets/profile-pic.png')}
+                  style={styles.profileImage}
+                />
+              </TouchableHighlight>
+            </GestureHandlerRootView>
+
+            <Text style={styles.profileName}>
+              {currentUser.displayName || 'Someone Awesome'}
+            </Text>
+            <Text style={styles.bio}>
+              {currentUser.bio || 'This person is lazy, left no description..'}
+            </Text>
           </View>
         </View>
-      </View>
-      {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
-    </ScrollView>
+
+        <View style={styles.utilityContainer}>
+          <Tab.Navigator
+            style={styles.tab}
+            tabBarPosition='top'
+            screenOptions={{
+              tabBarLabelStyle: { fontSize: 12 },  // Optional: Adjust tab label styles
+              tabBarStyle: { backgroundColor: 'white' },
+              tabBarIndicatorStyle: { backgroundColor: colors.primary }
+            }}
+          >
+            <Tab.Screen name="Posts" component={PostScreen} options={{
+              tabBarShowLabel: false,
+              tabBarIcon: ({ focused }) => (
+                <Image
+                  source={require('../../assets/icons/profile_posts.png')}
+                  style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
+                />
+              )
+            }}
+            />
+            <Tab.Screen name="Bookmarks" component={BookmarkedScreen} options={{
+              tabBarShowLabel: false,
+              tabBarIcon: ({ focused }) => (
+                <Image
+                  source={require('../../assets/icons/profile_bookmark.png')}
+                  style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
+                />
+              )
+            }}
+            />
+            <Tab.Screen name="Connections" component={ConnectionScreen} options={{
+              tabBarShowLabel: false,
+              tabBarIcon: ({ focused }) => (
+                <Image
+                  source={require('../../assets/icons/profile_connections.png')}
+                  style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
+                />
+              )
+            }}
+            />
+          </Tab.Navigator>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  before:{
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-  },
   scrollView: {
     flex: 1,
     backgroundColor: colors.background,
   },
   container: {
-      paddingTop: 60,
-      paddingHorizontal: 15,
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  centered: {
     flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  illustration: {
-    width: '100%',
-    height: 300,
-    resizeMode: 'contain',
-    marginBottom: 20,
-    marginTop: 30,
-  },
-  title:{
-    fontSize: 24,
-    color: 'black',
-    textAlign: 'center',
-    paddingHorizontal: 30,
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    paddingHorizontal: 30,
-    marginBottom: 40,
-  },
-  button: {
-    width: '80%',
-    paddingVertical: 12,
-    borderRadius: 25,
-    marginBottom: 15,
-    alignItems: 'center',
-    alignSelf: 'center',
-  },
-  signUpButton: {
-    backgroundColor: colors.primary,
-  },
-  signInButton: {
     backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: colors.primary,
   },
-  signUpButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  signInButtonText: {
-    color: colors.primary,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  safeArea: {
-    flex: 1,
+  bannerContainer: {
     backgroundColor: 'white',
-    paddingTop: 50,
+    paddingBottom: 20,
   },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 10,
+  headerBackground: {
+    height: 200,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden', // 防止内容溢出
   },
-  profileContainer: {
-    alignItems: 'center',
-    marginTop: 20,
+  defaultBackground: {
+    backgroundColor: '#884EFE',
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderColor: 'blue',
-    borderWidth: 2,
+  addButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
   },
-  profileName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    color: '#000',
+  settingsButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 1,
   },
-  bio:{
-    fontSize: 16,
-    marginBottom: 10,
+  icon: {
+    width: 24,
+    height: 24,
+    tintColor: 'white',
+  },
+  statsOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    zIndex: 1,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '100%',
-    paddingVertical: 20,
+    paddingVertical: 15,
+    marginHorizontal: 20,
+    borderRadius: 10,
+  },
+  profileSection: {
+    alignItems: 'center',
+    marginTop: -75,
+    zIndex: 3, // 确保头像在最上层
+  },
+  profileImageWrapper: {
+    borderRadius: 75,
+    borderWidth: 3,
+    borderColor: 'white',
+    backgroundColor: 'white', // 添加背景色防止透明
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  profileImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+  },
+  profileName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 15,
+    color: '#333',
+  },
+  bio: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    paddingHorizontal: 30,
+    marginTop: 10,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 20, // 稍微加大字号
+    fontWeight: '800',
+    color: 'white',
   },
   statLabel: {
-    fontSize: 16,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 4,
+    fontWeight: '500',
   },
   icon: {
-    width: 60,
-    height: 60,
-    marginBottom: 15,
+    width: 24,
+    height: 24,
+    tintColor: 'white',
+  },
+  SettingIcon: {
+    width: 50,
+    height: 50,
+    marginBottom: 5,
+    marginTop: 5,
+  },
+  tab: {
+    width: '100%',
+    height: 50,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: { height: 1 },
+  },
+  tabIcon: {
+    width: 25,
+    height: 25,
+  },
+  noConnectionText: {
+    fontSize: 18,
+    color: 'gray',
+  },
+  utilityContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    marginTop: 20,
   },
 });
 
