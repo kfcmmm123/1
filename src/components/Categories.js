@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, Text, StyleSheet, View, ImageBackground, TouchableOpacity } from 'react-native';
+import { ScrollView, Text, StyleSheet, View, ImageBackground } from 'react-native';
 
 const categories = [
   { id: '1', title: 'Community Life', description: 'Culture, Support, Assistance', background: require('../../assets/media1.jpg') },
@@ -8,32 +8,28 @@ const categories = [
   { id: '4', title: 'Health, Wellness', description: 'Physical, Mental Well-being', background: require('../../assets/media1.jpg') },
 ];
 
-const Categories = ({ onCategorySelect }) => {
+const Categories = () => {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.container}>
       {categories.map((category) => (
-        <TouchableOpacity
+        <ImageBackground
           key={category.id}
-          onPress={() => onCategorySelect(category.title)} // Pass selected category title
+          source={category.background}
+          style={styles.categoryItem}
+          imageStyle={styles.backgroundImage}
         >
+          {/* Overlay for the cover image */}
           <ImageBackground
-            source={category.background}
-            style={styles.categoryItem}
-            imageStyle={styles.backgroundImage}
+            source={require('../../assets/NewVersion/Cover.png')}
+            style={styles.coverImage}
+            imageStyle={styles.coverImageStyle}
           >
-            {/* Overlay for the cover image */}
-            <ImageBackground
-              source={require('../../assets/NewVersion/Cover.png')}
-              style={styles.coverImage}
-              imageStyle={styles.coverImageStyle}
-            >
-              <View style={styles.textContainer}>
-                <Text style={styles.title}>{category.title}</Text>
-                <Text style={styles.description}>{category.description}</Text>
-              </View>
-            </ImageBackground>
+            <View style={styles.textContainer}>
+              <Text style={styles.title}>{category.title}</Text>
+              <Text style={styles.description}>{category.description}</Text>
+            </View>
           </ImageBackground>
-        </TouchableOpacity>
+        </ImageBackground>
       ))}
     </ScrollView>
   );
