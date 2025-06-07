@@ -6,7 +6,7 @@ const SignInUpScreen = ({ navigation }) => {
         <View style={styles.container}>
             {/* Logo */}
             <Image
-                source={require('../../../assets/adaptive-icon-cropped.png')} // Replace with your logo path
+                source={require('../../assets/adaptive-icon-cropped.png')} // Replace with your logo path
                 style={styles.logo}
             />
 

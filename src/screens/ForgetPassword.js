@@ -13,13 +13,13 @@ import {
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../../api/firebaseConfig';
-import Eye from '../../../assets/NewVersion/Eye.png';
-import Check from '../../../assets/NewVersion/Check.png';
-import Mail from '../../../assets/NewVersion/Mail.png';
-import Google from '../../../assets/NewVersion/Google.png';
-import Facebook from '../../../assets/NewVersion/Facebook.png';
-import GoBack from '../../../assets/NewVersion/GoBack.png';
+import { auth, db } from '../api/firebaseConfig';
+import Eye from '../../assets/NewVersion/Eye.png';
+import Check from '../../assets/NewVersion/Check.png';
+import Mail from '../../assets/NewVersion/Mail.png';
+import Google from '../../assets/NewVersion/Google.png';
+import Facebook from '../../assets/NewVersion/Facebook.png';
+import GoBack from '../../assets/NewVersion/GoBack.png';
 
 const ForgetPassword = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ const ForgetPassword = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Image source={GoBack} style={styles.goback} />
         </TouchableOpacity>
-        <Image source={require('../../../assets/adaptive-icon-cropped.png')} style={styles.logo} />
+        <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.logo} />
         <View style={styles.text}>
             <Text style={styles.header}>Forgot Password?</Text>
         </View>

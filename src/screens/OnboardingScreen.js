@@ -4,8 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
-const OnboardingScreen = ({ navigation, route }) => {
-  const onFinished = route?.params?.onFinished;
+const OnboardingScreen = ({ navigation }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity set to 0
 
@@ -31,9 +30,8 @@ const OnboardingScreen = ({ navigation, route }) => {
   const handleNext = async () => {
     if (currentPage === pages.length - 1) {
       try {
-        await AsyncStorage.setItem('onboardingCompleted', 'true');
-        navigation.navigate('SignInUpScreen'); // Navigate directly to the Profile tab
-        onFinished(); // Call onFinished when onboarding is completed
+        await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+        navigation.replace('SignInUpScreen');
       } catch (e) {
         console.error('Error saving onboarding state:', e);
       }
@@ -44,9 +42,10 @@ const OnboardingScreen = ({ navigation, route }) => {
 
   const handleSkip = async () => {
     try {
-      await AsyncStorage.setItem('onboardingCompleted', 'true');
-      navigation.navigate('Profile'); // Navigate directly to the Profile tab
-      onFinished(); // Call onFinished when onboarding is skipped
+      await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+      navigation.replace('SignInUpScreen');
+
+
     } catch (e) {
       console.error('Error saving onboarding state:', e);
     }

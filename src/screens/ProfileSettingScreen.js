@@ -82,7 +82,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
       await AsyncStorage.setItem('resetProfileScreen', 'true'); // Set a flag when signing out
       await AsyncStorage.setItem('bannerMessage', 'You have signed out!');
       await AsyncStorage.setItem('bannerType', 'success');      
-      navigation.navigate('Profile');
+      navigation.navigate('SignInUpScreen'); // Navigate to SignInUpScreen
     } catch (error) {
       console.error('Error signing out:', error);
       await AsyncStorage.setItem('bannerMessage', 'Failed to sign out.');

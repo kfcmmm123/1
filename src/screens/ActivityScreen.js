@@ -3,8 +3,8 @@ import { Button, Image, StyleSheet, ScrollView, Text, TouchableOpacity, View } f
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ActivityResultsList from '../../components/ActivityResultsList';
-import colors from '../../../assets/colors/colors';
+import ActivityResultsList from '../components/ActivityResultsList';
+import colors from '../../assets/colors/colors';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 const ActivityScreen = ({navigation}) => {
@@ -42,19 +42,8 @@ const ActivityScreen = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchTasks(); // handleFilterChange is called within fetchTasks
+      fetchTasks();
     }, [])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      const fetchDataAndUpdateState = async () => {
-        await fetchTasks(); // Fetch tasks from AsyncStorage
-        handleFilterChange('all'); // Always reset to 'All' filter upon focusing
-      };
-
-      fetchDataAndUpdateState();
-    }, []) // Dependencies array is empty to indicate this effect doesn't depend on any state or props
   );
 
   const handleFilterChange = (newFilter, allTasks = tasks) => {
@@ -92,7 +81,7 @@ const ActivityScreen = ({navigation}) => {
     <ScrollView style={styles.scrollView}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Image source={require('../../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
+          <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
           <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>VolunTrack</Text>
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>

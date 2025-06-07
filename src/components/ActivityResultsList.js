@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ImageBackground, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -16,44 +16,17 @@ const ActivityResultsList = ({ title, results, navigation }) => {
     }
   };
 
-  const BookmarkButton = ({ item }) => {
-    const [isBookmarked, setIsBookmarked] = useState(false);
+  const createColumns = () => {
+    const columnData = [[], []]; // 左右两列
+    results.forEach((item, index) => {
+      columnData[index % 2].push(item);
+    });
+    return columnData;
+  };
 
-    const bookmarkKey = `@bookmark_${item.id}`;
-
-    const handleBookmark = async () => {
-      const newBookmarkStatus = !isBookmarked;
-      setIsBookmarked(newBookmarkStatus);
-      try {
-        const bookmarkArray = JSON.parse(await AsyncStorage.getItem('@bookmarks')) || [];
-        if (newBookmarkStatus) {
-          const updatedBookmarkArray = [...bookmarkArray, item];
-          await AsyncStorage.setItem('@bookmarks', JSON.stringify(updatedBookmarkArray));
-        } else {
-          const updatedBookmarkArray = bookmarkArray.filter(bookmark => bookmark.id !== item.id);
-          await AsyncStorage.setItem('@bookmarks', JSON.stringify(updatedBookmarkArray));
-        }
-      } catch (e) {
-        console.error('Failed to update bookmark', e);
-      }
-    };
-
-    useEffect(() => {
-      const initializeBookmarkStatus = async () => {
-        try {
-          const bookmarks = JSON.parse(await AsyncStorage.getItem('@bookmarks')) || [];
-          setIsBookmarked(bookmarks.some(bookmark => bookmark.id === item.id));
-        } catch (e) {
-          console.error('Failed to initialize bookmark status', e);
-        }
-      };
-
-      initializeBookmarkStatus();
-    }, [item.id]);
-
+  const renderItem = (item) => {
     return (
       <TouchableOpacity
-        key={item.id}
         style={styles.resultItem}
         onPress={() => navigation.navigate('VolunteeringScreen', { itemData: item })}
       >
@@ -65,58 +38,46 @@ const ActivityResultsList = ({ title, results, navigation }) => {
             <Ionicons name="checkmark-circle" size={30} color="green" />
           </View>
         </View>
+
+        <Image
+          source={require('../../assets/adaptive-icon-cropped.png')}
+          style={styles.icon}
+        />
+
+        <Text
+          style={styles.city}
+          ellipsizeMode="tail"
+          numberOfLines={1}
+        >
+          {item.city || 'York Region...'}
+        </Text>
+
+        <Text
+          style={styles.name}
+          ellipsizeMode="tail"
+          numberOfLines={1}
+        >
+          {item.name || '2024 Summer...'}
+        </Text>
+
+        <Text style={styles.date}>02/01/2025</Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        data={results}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        keyExtractor={(result) => result.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.resultItem}
-            onPress={() => navigation.navigate('VolunteeringScreen', { itemData: item })}
-          >
-            <View style={styles.header}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>30 Days</Text>
-              </View>
-              <View style={styles.checkmarkContainer}>
-                <Ionicons name="checkmark-circle" size={30} color="green" />
-              </View>
-            </View>
-
-            <Image
-              source={require('../../assets/adaptive-icon-cropped.png')}
-              style={styles.icon}
-            />
-
-            <Text
-              style={styles.city}
-              ellipsizeMode="tail"
-              numberOfLines={1}
-            >
-              {item.city || 'York Region...'}
-            </Text>
-
-            <Text
-              style={styles.name}
-              ellipsizeMode="tail"
-              numberOfLines={1}
-            >
-              {item.name || '2024 Summer...'}
-            </Text>
-
-            <Text style={styles.date}>02/01/2025</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.columnsWrapper}>
+        {createColumns().map((column, colIndex) => (
+          <View key={`column-${colIndex}`} style={styles.column}>
+            {column.map(renderItem)}
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
@@ -125,12 +86,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginHorizontal: 5,
   },
-  columnWrapper: {
+  columnsWrapper: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 5
+    paddingHorizontal: 5,
+  },
+  column: {
+    width: '48%',
   },
   resultItem: {
-    width: '48%',
+    width: '100%',
     aspectRatio: 1,
     borderRadius: 15, // Rounded corners
     backgroundColor: '#fff',
@@ -185,6 +150,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     marginBottom: 5,
+    maxWidth: '95%'
   },
   date: {
     fontSize: 24,

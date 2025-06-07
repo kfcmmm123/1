@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import colors from '../../assets/colors/colors';
 
@@ -148,15 +149,15 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.statLabel}>Volunteer</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{currentUser.facilitated || 0}</Text>
+          <Text style={styles.statValue}>{currentUser?.facilitated || 0}</Text>
           <Text style={styles.statLabel}>Facilitated</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{currentUser.events || 0}</Text>
+          <Text style={styles.statValue}>{currentUser?.events || 0}</Text>
           <Text style={styles.statLabel}>Events</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{currentUser.group || 0}</Text>
+          <Text style={styles.statValue}>{currentUser?.group || 0}</Text>
           <Text style={styles.statLabel}>Group</Text>
         </View>
       </View>
@@ -176,7 +177,7 @@ const ProfileScreen = ({ navigation }) => {
   }
 
   return (
-    <View
+    <SafeAreaView
       style={{ flex: 1 }}
     >
       {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
@@ -188,7 +189,7 @@ const ProfileScreen = ({ navigation }) => {
       >
         <View style={styles.bannerContainer}>
           {/* 顶部背景部分 - 根据用户设置动态显示 */}
-          {currentUser.backgroundImage ? (
+          {currentUser?.backgroundImage ? (
             <ImageBackground
               source={{ uri: currentUser.backgroundImage }}
               style={styles.headerBackground}
@@ -219,10 +220,10 @@ const ProfileScreen = ({ navigation }) => {
             </GestureHandlerRootView>
 
             <Text style={styles.profileName}>
-              {currentUser.displayName || 'Someone Awesome'}
+              {currentUser?.displayName || 'Someone Awesome'}
             </Text>
             <Text style={styles.bio}>
-              {currentUser.bio || 'This person is lazy, left no description..'}
+              {currentUser?.bio || 'This person is lazy, left no description..'}
             </Text>
           </View>
         </View>
@@ -270,13 +271,12 @@ const ProfileScreen = ({ navigation }) => {
           </Tab.Navigator>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   scrollView: {
-    flex: 1,
     backgroundColor: colors.background,
   },
   container: {
