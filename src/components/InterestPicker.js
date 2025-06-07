@@ -14,7 +14,7 @@ const InterestsOptions = [
     { name: 'Seniors', image: require('../../assets/NewVersion/Mail.png') },
     { name: 'Services', image: require('../../assets/NewVersion/Mail.png') },
     { name: 'Religion', image: require('../../assets/NewVersion/Mail.png') },
-    { name: 'Education', image: require('../../assets/NewVersion/Mail.png') },
+    { name: 'Fundraising', image: require('../../assets/NewVersion/Mail.png') },
 ];
 
 const InterestsPicker = () => {
@@ -61,7 +61,7 @@ const InterestsPicker = () => {
             </View>
             <Text style={styles.subtitle}>Get matched with volunteer roles you’ll love.</Text>
             <View style={styles.line} />
-
+            
             <View style={styles.interestsContainer}>
                 {InterestsOptions.map(({ name, image }) => (  // Change 'icon' to 'image'
                     <View style={styles.bubble} key={name}>

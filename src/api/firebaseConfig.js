@@ -5,27 +5,15 @@ import { getFirestore } from 'firebase/firestore';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import environment variables from .env file
-import {
-  FIREBASE_API_KEY,
-  FIREBASE_AUTH_DOMAIN,
-  FIREBASE_DATABASE_URL,
-  FIREBASE_PROJECT_ID,
-  FIREBASE_STORAGE_BUCKET,
-  FIREBASE_MESSAGING_SENDER_ID,
-  FIREBASE_APP_ID,
-  FIREBASE_MEASUREMENT_ID
-} from '@env';
-
-// Firebase configuration
 const firebaseConfig = {
-  apiKey: FIREBASE_API_KEY,
-  authDomain: FIREBASE_AUTH_DOMAIN,
-  databaseURL: FIREBASE_DATABASE_URL,
-  projectId: FIREBASE_PROJECT_ID,
-  storageBucket: FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
-  appId: FIREBASE_APP_ID,
-  measurementId: FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyACm3swv3gxxhdoOSXGn_dGO83jN7idrCA",
+  authDomain: "volun-track.firebaseapp.com",
+  databaseURL: "https://volun-track-default-rtdb.firebaseio.com",
+  projectId: "volun-track",
+  storageBucket: "volun-track.firebasestorage.app",
+  messagingSenderId: "348051927128",
+  appId: "1:348051927128:web:30169cf42d5053de5c1a2d",
+  measurementId: "G-WDQ5PPH1ZJ"
 };
 
 // Initialize Firebase App
