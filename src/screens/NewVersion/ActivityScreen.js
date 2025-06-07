@@ -42,19 +42,8 @@ const ActivityScreen = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchTasks(); // handleFilterChange is called within fetchTasks
+      fetchTasks();
     }, [])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      const fetchDataAndUpdateState = async () => {
-        await fetchTasks(); // Fetch tasks from AsyncStorage
-        handleFilterChange('all'); // Always reset to 'All' filter upon focusing
-      };
-
-      fetchDataAndUpdateState();
-    }, []) // Dependencies array is empty to indicate this effect doesn't depend on any state or props
   );
 
   const handleFilterChange = (newFilter, allTasks = tasks) => {
