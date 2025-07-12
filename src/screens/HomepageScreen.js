@@ -8,6 +8,8 @@ import colors from '../../assets/colors/colors';
 import HomepageSearchBar from '../components/HomepageSearchBar';
 import Categories from '../components/Categories';
 import ResultsList from '../components/ResultsList';
+import AIDiscoverySection from '../components/AIDiscoverySection';
+import AIFilterSection from '../components/AIFilterSection';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const HomepageScreen = ({ navigation }) => {
@@ -24,6 +26,7 @@ const HomepageScreen = ({ navigation }) => {
   const [selectedEndDate, setSelectedEndDate] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [aiFilters, setAiFilters] = useState({});
   const hasActiveFilters = term || selectedCity || selectedCategory || selectedStartDate || selectedEndDate || selectedCategories.length > 0;
 
   const formatDate = (date) => date ? new Date(date).toLocaleDateString() : '';
@@ -213,10 +216,22 @@ const HomepageScreen = ({ navigation }) => {
         onTermChange={setTerm}
         onTermSubmit={handleSearchSubmit}
       />
-              <Button title={"Set"} onPress={() => AsyncStorage.setItem('hasCompletedOnboarding', 'false')}></Button>
+      
+      {/* AI Discovery Section */}
+      <AIDiscoverySection
+        opportunities={results}
+        onOpportunityPress={(opportunity) => {
+          // Navigate to opportunity details
+          navigation.navigate('ResultsShowScreen', { result: opportunity });
+        }}
+        navigation={navigation}
+      />
+
+      {/* AI Filter Section */}
+      <AIFilterSection onFiltersChange={setAiFilters} />
 
       {!hasActiveFilters && <Categories onCategorySelect={handleCategorySelect} />}
-      <Text style={styles.text}>{hasActiveFilters ? 'Filtered Results' : 'Recommended Jobs'}</Text>
+      <Text style={styles.text}>{hasActiveFilters ? 'Filtered Results' : 'All Opportunities'}</Text>
       {hasActiveFilters && <TouchableOpacity onPress={resetFilter}><Text>Reset Filter</Text></TouchableOpacity>}
       {(hasActiveFilters && !term) && (
         <Text style={styles.filterSummary}>{filterText()}</Text>
