@@ -6,23 +6,26 @@ import DatePicker from '../components/DatePicker';
 import LocationPicer from '../components/LocationPicker';
 import InterestsPicker from '../components/InterestPicker';
 import GoBack from '../../assets/NewVersion/GoBack.png';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const HomepageSettingsScreen = ({ navigation }) => {
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header with Back Button and Title */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Image source={GoBack} style={styles.goback} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Filter Events</Text>
-      </View>
-      {/* Date Picker */}
-      <DatePicker/>
-      <LocationPicer/>
-      <InterestsPicker/>
-    </ScrollView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        {/* Header with Back Button and Title */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Image source={GoBack} style={styles.goback} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Filter Events</Text>
+        </View>
+        {/* Date Picker */}
+        <DatePicker />
+        <LocationPicer />
+        <InterestsPicker />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

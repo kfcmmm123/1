@@ -8,7 +8,7 @@ import colors from '../../assets/colors/colors';
 const hobbiesOptions = [
     'Sports', 'Animals', 'Environment', 'Teaching', 'Peer Support', 'Youth', 'Seniors',
     'Social Services', 'Religion', 'Fundraising', 'Communication', 'Food',
-    'Event Assistence', 'Arts', 'Culture', 'Accessibility' , 'Finance', 'Leadership', 'Education',
+    'Event Assistence', 'Arts', 'Culture', 'Accessibility', 'Finance', 'Leadership', 'Education',
     'Literacy', 'IT Support', 'Settlement and Newcomers', 'Recreation', 'Trades', 'Maintenance'
 ];
 
@@ -25,15 +25,17 @@ const UserInterestsScreen = ({ route, navigation }) => {
             Alert.alert("Error", "No user is currently logged in.");
             return; // Stop execution if no user is logged in
         }
-    
+
         const { uid } = auth.currentUser;
         const userRef = doc(db, 'users', uid);
-    
+
         try {
             await setDoc(userRef, { ...userInfo, hobbies: selectedHobbies }, { merge: true });
             await AsyncStorage.setItem('isNewUser', 'false');
             Alert.alert("Success", "Profile Updated Successfully");
-            navigation.navigate('Homepage');
+            navigation.navigate('Main', {
+                screen: 'Account',
+            });
         } catch (error) {
             console.error("Error updating user info:", error);
             Alert.alert("Error", "Failed to update profile");
@@ -42,7 +44,9 @@ const UserInterestsScreen = ({ route, navigation }) => {
 
     const handleSkip = async () => {
         await updateUserStatus();
-        navigation.navigate('Homepage');
+        navigation.navigate('Main', {
+            screen: 'Account',
+        });
     };
 
     const handleToggleHobby = (hobby) => {
@@ -88,7 +92,7 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 30,
         backgroundColor: colors.background,
-        flex:1,
+        flex: 1,
     },
     title: {
         fontSize: 30,
@@ -140,7 +144,7 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 18,
     },
-    skipButton:{
+    skipButton: {
         backgroundColor: '#A9A9A9',
         paddingVertical: 12,
         borderRadius: 25,

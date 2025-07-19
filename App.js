@@ -25,9 +25,14 @@ import EditInterestScreen from './src/screens/EditInterestScreen';
 import EditCityScreen from './src/screens/EditCityScreen';
 import ActivityScreen from './src/screens/ActivityScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import BookmarkedScreen from './src/screens/BookmarkedScreen';
+import EditProfileScreen from './src/screens/ProfileSettings/EditProfileScreen';
+import ChatScreen from './src/screens/ChatScreen';
+import FriendRequestScreen from './src/screens/FriendRequestScreen';
 
 import { onAuthStateChanged, getAuth } from 'firebase/auth';
 import { auth } from './src/api/firebaseConfig'; // Your configured auth
+import { ensureUserProfile } from './src/services/userService';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -107,7 +112,11 @@ export default function App() {
         console.error('Failed to get onboarding status:', e);
       }
 
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          // Ensure user profile exists in Firestore
+          await ensureUserProfile();
+        }
         setIsAuthenticated(!!user);
         setIsLoading(false); // Wait for both onboarding and auth
       });
@@ -168,7 +177,7 @@ export default function App() {
           name="ProfileSettingScreen"
           component={ProfileSettingScreen}
           options={{
-            headerShown: true,
+            headerShown: false,
             title: 'ProfileSetting'
           }}
         />
@@ -239,6 +248,34 @@ export default function App() {
         <RootStack.Screen
           name="SignInUpScreen"
           component={SignInUpScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <RootStack.Screen
+          name="BookmarkedScreen"
+          component={BookmarkedScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <RootStack.Screen
+          name="EditProfileScreen"
+          component={EditProfileScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <RootStack.Screen
+          name="ChatScreen"
+          component={ChatScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <RootStack.Screen
+          name="FriendRequestScreen"
+          component={FriendRequestScreen}
           options={{
             headerShown: false,
           }}

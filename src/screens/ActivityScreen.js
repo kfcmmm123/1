@@ -6,8 +6,9 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ActivityResultsList from '../components/ActivityResultsList';
 import colors from '../../assets/colors/colors';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const ActivityScreen = ({navigation}) => {
+const ActivityScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -78,74 +79,72 @@ const ActivityScreen = ({navigation}) => {
   );
 
   return (
-    <ScrollView style={styles.scrollView}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
-          <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>VolunTrack</Text>
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>
-          <TouchableOpacity>
-            <Ionicons name={'search-outline'} size={30} color={'#000000'} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
+            <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>VolunTrack</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 5 }}>
-            <Ionicons name={'options-outline'} size={30} color={'#000000'} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>
+            <TouchableOpacity onPress={() => navigation.navigate('BookmarkedScreen')} style={{ marginLeft: 5 }}>
+              <Ionicons name={'bookmark'} size={30} color={'#9967FE'} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
 
-      <Text style={styles.text}>Stay motivated and monitor your progress across all goals in one place!</Text>
+        <Text style={styles.text}>Stay motivated and monitor your progress across all goals in one place!</Text>
 
-      <View style={styles.progress}>
-        <AnimatedCircularProgress
-          size={240}
-          width={20}
-          fill={calculateFillPercentage()}
-          lineCap="round"
-          rotation={270}
-          arcSweepAngle={180}
-          tintColor={getProgressColor(calculateFillPercentage())}
-          backgroundColor="#D9D9D9"
-        >
-          {(fill) => (
-            <View style={styles.progressTextContainer}>
-              <Text
-                style={[
-                  styles.progressText,
-                  { color: getProgressColor(fill) }
-                ]}
-              >
-                {Math.round(fill)}%
-              </Text>
-              <Text style={styles.progressSubText}>Total {totalHours} hrs</Text>
-            </View>
-          )}
-        </AnimatedCircularProgress>
-      </View>
+        <View style={styles.progress}>
+          <AnimatedCircularProgress
+            size={240}
+            width={20}
+            fill={calculateFillPercentage()}
+            lineCap="round"
+            rotation={270}
+            arcSweepAngle={180}
+            tintColor={getProgressColor(calculateFillPercentage())}
+            backgroundColor="#D9D9D9"
+          >
+            {(fill) => (
+              <View style={styles.progressTextContainer}>
+                <Text
+                  style={[
+                    styles.progressText,
+                    { color: getProgressColor(fill) }
+                  ]}
+                >
+                  {Math.round(fill)}%
+                </Text>
+                <Text style={styles.progressSubText}>Total {totalHours} hrs</Text>
+              </View>
+            )}
+          </AnimatedCircularProgress>
+        </View>
 
-      <View style={styles.separator} />
+        <View style={styles.separator} />
 
-      <View style={styles.filterOptions}>
-        <FilterButton title="All" isActive={activeFilter === 'all'} onPress={() => handleFilterChange('all')} />
-        <FilterButton title="Ongoing" isActive={activeFilter === 'ongoing'} onPress={() => handleFilterChange('ongoing')} />
-        <FilterButton title="Completed" isActive={activeFilter === 'completed'} onPress={() => handleFilterChange('completed')} />
-      </View>
-      {
-        filteredTasks.length > 0 ? (
-          <ActivityResultsList
-            results={filteredTasks}
-            navigation={navigation}
-          />
-        ) : (
-          <Text style={styles.noResultsText}>
-            {activeFilter === 'ongoing' && "You don't have any ongoing volunteering now."}
-            {activeFilter === 'completed' && "You don't have any completed volunteering now."}
-            {activeFilter === 'all' && "You don't have any ongoing/completed volunteering yet. Go apply one!"}
-          </Text>
-        )
-      }
-    </ScrollView>
-
+        <View style={styles.filterOptions}>
+          <FilterButton title="All" isActive={activeFilter === 'all'} onPress={() => handleFilterChange('all')} />
+          <FilterButton title="Ongoing" isActive={activeFilter === 'ongoing'} onPress={() => handleFilterChange('ongoing')} />
+          <FilterButton title="Completed" isActive={activeFilter === 'completed'} onPress={() => handleFilterChange('completed')} />
+        </View>
+        {
+          filteredTasks.length > 0 ? (
+            <ActivityResultsList
+              results={filteredTasks}
+              navigation={navigation}
+            />
+          ) : (
+            <Text style={styles.noResultsText}>
+              {activeFilter === 'ongoing' && "You don't have any ongoing volunteering now."}
+              {activeFilter === 'completed' && "You don't have any completed volunteering now."}
+              {activeFilter === 'all' && "You don't have any ongoing/completed volunteering yet. Go apply one!"}
+            </Text>
+          )
+        }
+      </ScrollView>
+    </SafeAreaView>
   )
 };
 

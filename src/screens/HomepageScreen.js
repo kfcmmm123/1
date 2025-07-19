@@ -9,6 +9,7 @@ import HomepageSearchBar from '../components/HomepageSearchBar';
 import Categories from '../components/Categories';
 import ResultsList from '../components/ResultsList';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const HomepageScreen = ({ navigation }) => {
   const [term, setTerm] = useState('');
@@ -185,47 +186,49 @@ const HomepageScreen = ({ navigation }) => {
   }, []);
 
   return (
-    <ScrollView
-      style={styles.scrollView}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={refreshResults}
-        />
-      }
-    >
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
-          <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>VolunTrack</Text>
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>
-          <TouchableOpacity>
-            <Ionicons name={'search-outline'} size={30} color={'#000000'} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refreshResults}
+          />
+        }
+      >
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
+            <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>VolunTrack</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 5 }} onPress={openSettings}>
-            <Ionicons name={'options-outline'} size={30} color={'#000000'} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>
+            <TouchableOpacity>
+              <Ionicons name={'search-outline'} size={30} color={'#000000'} />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ marginLeft: 5 }} onPress={openSettings}>
+              <Ionicons name={'options-outline'} size={30} color={'#000000'} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <HomepageSearchBar
-        term={term}
-        onTermChange={setTerm}
-        onTermSubmit={handleSearchSubmit}
-      />
+        <HomepageSearchBar
+          term={term}
+          onTermChange={setTerm}
+          onTermSubmit={handleSearchSubmit}
+        />
               <Button title={"Set"} onPress={() => AsyncStorage.setItem('hasCompletedOnboarding', 'false')}></Button>
 
-      {!hasActiveFilters && <Categories onCategorySelect={handleCategorySelect} />}
-      <Text style={styles.text}>{hasActiveFilters ? 'Filtered Results' : 'Recommended Jobs'}</Text>
-      {hasActiveFilters && <TouchableOpacity onPress={resetFilter}><Text>Reset Filter</Text></TouchableOpacity>}
-      {(hasActiveFilters && !term) && (
-        <Text style={styles.filterSummary}>{filterText()}</Text>
-      )}
-      {filteredResults.length === 0 && (
-        <Text style={styles.noResultsMessage}>No results found.</Text>
-      )}
-      <ResultsList results={filteredResults} navigation={navigation} />
-    </ScrollView>
+        {!hasActiveFilters && <Categories onCategorySelect={handleCategorySelect} />}
+        <Text style={styles.text}>{hasActiveFilters ? 'Filtered Results' : 'Recommended Jobs'}</Text>
+        {hasActiveFilters && <TouchableOpacity onPress={resetFilter}><Text>Reset Filter</Text></TouchableOpacity>}
+        {(hasActiveFilters && !term) && (
+          <Text style={styles.filterSummary}>{filterText()}</Text>
+        )}
+        {filteredResults.length === 0 && (
+          <Text style={styles.noResultsMessage}>No results found.</Text>
+        )}
+        <ResultsList results={filteredResults} navigation={navigation} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

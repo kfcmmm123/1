@@ -73,7 +73,11 @@ const ActivityResultsList = ({ title, results, navigation }) => {
       <View style={styles.columnsWrapper}>
         {createColumns().map((column, colIndex) => (
           <View key={`column-${colIndex}`} style={styles.column}>
-            {column.map(renderItem)}
+            {column.map((item, index) => (
+              <React.Fragment key={item.id || item.name || index}>
+                {renderItem(item)}
+              </React.Fragment>
+            ))}
           </View>
         ))}
       </View>
