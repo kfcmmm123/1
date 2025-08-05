@@ -132,8 +132,6 @@ const SignInScreen = ({ navigation, route }) => {
       </View>
 
       <Text style={styles.password}>Password</Text>
-
-
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Password"

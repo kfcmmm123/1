@@ -4,7 +4,6 @@ import { auth, db } from '../api/firebaseConfig';
 import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import storage from '@react-native-firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +12,6 @@ import colors from '../../assets/colors/colors';
 
 import NotificationBanner from '../components/NotificationBanner'; // Adjust the path as necessary
 import PostScreen from './PostScreen';
-import BookmarkedScreen from './BookmarkedScreen';
 
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -27,6 +25,7 @@ const ProfileScreen = ({ navigation }) => {
   const [bannerMessage, setBannerMessage] = useState('');
   const [bannerType, setBannerType] = useState('success');
   const [completedTasksCount, setCompletedTasksCount] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const fetchUserData = async () => {
     setLoading(true);
@@ -164,113 +163,90 @@ const ProfileScreen = ({ navigation }) => {
     </View>
   );
 
-  const Tab = createMaterialTopTabNavigator();
 
-  function ConnectionScreen() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={styles.noConnectionText}>
-          No connection available
-        </Text>
-      </View>
-    );
-  }
 
   return (
-    <SafeAreaView
-      style={{ flex: 1 }}
-    >
+    <SafeAreaView style={{ flex: 1 }}>
       {bannerMessage && <NotificationBanner message={bannerMessage} type={bannerType} />}
 
       <ScrollView
         style={styles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={{ flexGrow: 1 }}  // Ensures the ScrollView content fills the space
+        contentContainerStyle={{ flexGrow: 1 }}
+        contentInsetAdjustmentBehavior="automatic"
       >
-        <View style={styles.bannerContainer}>
-          {/* 顶部背景部分 - 根据用户设置动态显示 */}
-          {currentUser?.backgroundImage ? (
-            <ImageBackground
-              source={{ uri: currentUser.backgroundImage }}
-              style={styles.headerBackground}
-            >
-              <HeaderControls />
-              <StatsOverlay />
-            </ImageBackground>
-          ) : (
-            <View style={[styles.headerBackground, styles.defaultBackground]}>
-              <HeaderControls />
-              <StatsOverlay />
-            </View>
-          )}
-
-          {/* 用户信息部分 */}
-          <View style={styles.profileSection}>
-            <GestureHandlerRootView>
-              <TouchableHighlight
-                style={styles.profileImageWrapper}
-                underlayColor="#ddd"
+        {/* Header Section with Purple Background and Stats */}
+        <View style={[styles.headerContainer, bannerMessage && { paddingTop: 50 }]}>
+          {/* Top Icons */}
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => console.log('Add pressed')}
+          >
+            <Image
+              source={require('../../assets/icons/more.png')}
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.settingsButton}
                 onPress={() => navigation.navigate('ProfileSettingScreen')}
               >
-                <Image
-                  source={require('../../assets/profile-pic.png')}
-                  style={styles.profileImage}
-                />
-              </TouchableHighlight>
-            </GestureHandlerRootView>
-
-            <Text style={styles.profileName}>
-              {currentUser?.displayName || 'Someone Awesome'}
-            </Text>
-            <Text style={styles.bio}>
-              {currentUser?.bio || 'This person is lazy, left no description..'}
-            </Text>
+            <Image
+              source={require('../../assets/icons/setting.png')}
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+          {/* Stats Row */}
+          <View style={styles.statsRowContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{completedTasksCount || 0}</Text>
+              <Text style={styles.statLabel}>Volunteer</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{currentUser?.friends || 0}</Text>
+              <Text style={styles.statLabel}>Friends</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{currentUser?.likes || 0}</Text>
+              <Text style={styles.statLabel}>Likes</Text>
+            </View>
           </View>
         </View>
 
+        {/* Profile Image (overlapping header) */}
+        <View style={styles.profileImageWrapperMain}>
+                <Image
+                  source={require('../../assets/profile-pic.png')}
+            style={styles.profileImageMain}
+                />
+        </View>
+
+        {/* Profile Info Section */}
+        <View style={styles.profileInfoSection}>
+          <Text style={styles.profileNameMain}>{currentUser?.displayName || 'Volunteer Name'}</Text>
+          <Text style={styles.profileEmail}>{currentUser?.email || 'volunteermail.com'}</Text>
+          <View style={styles.profileLocationRow}>
+            <Image source={require('../../assets/icons/location.png')} style={styles.locationIcon} />
+            <Text style={styles.profileLocationText}>{currentUser?.location || 'Toronto, ON, Canada'}</Text>
+          </View>
+          <View style={styles.socialIconsRow}>
+            <Image source={require('../../assets/icons/facebook.png')} style={styles.socialIcon} />
+            <Image source={require('../../assets/icons/linkedin.png')} style={styles.socialIcon} />
+            <Image source={require('../../assets/icons/tumblr.png')} style={styles.socialIcon} />
+          </View>
+        </View>
+
+        {/* Posts Section */}
         <View style={styles.utilityContainer}>
-          <Tab.Navigator
-            style={styles.tab}
-            tabBarPosition='top'
-            screenOptions={{
-              tabBarLabelStyle: { fontSize: 12 },  // Optional: Adjust tab label styles
-              tabBarStyle: { backgroundColor: 'white' },
-              tabBarIndicatorStyle: { backgroundColor: colors.primary }
-            }}
-          >
-            <Tab.Screen name="Posts" component={PostScreen} options={{
-              tabBarShowLabel: false,
-              tabBarIcon: ({ focused }) => (
-                <Image
-                  source={require('../../assets/icons/profile_posts.png')}
-                  style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
-                />
-              )
-            }}
-            />
-            <Tab.Screen name="Bookmarks" component={BookmarkedScreen} options={{
-              tabBarShowLabel: false,
-              tabBarIcon: ({ focused }) => (
-                <Image
-                  source={require('../../assets/icons/profile_bookmark.png')}
-                  style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
-                />
-              )
-            }}
-            />
-            <Tab.Screen name="Connections" component={ConnectionScreen} options={{
-              tabBarShowLabel: false,
-              tabBarIcon: ({ focused }) => (
-                <Image
-                  source={require('../../assets/icons/profile_connections.png')}
-                  style={[styles.tabIcon, { tintColor: focused ? colors.primary : 'black' }]}
-                />
-              )
-            }}
-            />
-          </Tab.Navigator>
+          <PostScreen modalVisible={modalVisible} setModalVisible={setModalVisible} />
         </View>
       </ScrollView>
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.fabIcon}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -388,27 +364,133 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     marginTop: 5,
   },
-  tab: {
-    width: '100%',
-    height: 50,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    shadowOffset: { height: 1 },
-  },
-  tabIcon: {
-    width: 25,
-    height: 25,
-  },
-  noConnectionText: {
-    fontSize: 18,
-    color: 'gray',
-  },
+
   utilityContainer: {
     flex: 1,
     backgroundColor: 'white',
     marginTop: 20,
+  },
+  headerContainer: {
+    backgroundColor: '#884EFE',
+    height: 160,
+    width: '100%',
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  statsContainerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginHorizontal: 30,
+    marginBottom: 0,
+  },
+  statItemHeader: {
+    alignItems: 'center',
+  },
+  statValueHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  statLabelHeader: {
+    fontSize: 12,
+    color: 'white',
+    marginTop: 2,
+  },
+  profileImageWrapperMain: {
+    alignItems: 'center',
+    marginTop: -40, // less negative so image starts lower
+    zIndex: 2,
+  },
+  profileImageMain: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: 'white',
+    backgroundColor: 'white',
+  },
+  profileInfoSection: {
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  profileNameMain: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 2,
+  },
+  profileLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  locationIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 4,
+    tintColor: '#888',
+  },
+  profileLocationText: {
+    color: '#888',
+    fontSize: 14,
+  },
+  socialIconsRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  socialIcon: {
+    width: 32,
+    height: 32,
+    marginHorizontal: 8,
+  },
+  statsRowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    width: '80%',
+    alignSelf: 'center',
+    marginTop: 10, // or negative margin to bring closer to image
+    borderRadius: 20, // optional for pill look
+    paddingVertical: 8,
+    marginBottom: 40,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValue: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  statLabel: {
+    color: 'white',
+    fontSize: 12,
+    marginTop: 2,
+    opacity: 0.8,
+  },
+  fab: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 20,
+    bottom: 20,
+    backgroundColor: '#03A9F4',
+    borderRadius: 28,
+    elevation: 8,
+    zIndex: 1000,
+  },
+  fabIcon: {
+    fontSize: 24,
+    color: 'white',
   },
 });
 

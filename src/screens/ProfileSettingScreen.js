@@ -1,132 +1,161 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert, TouchableOpacity, ScrollView, ActivityIndicator, Image } from 'react-native';
-import { auth, db } from '../api/firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert } from 'react-native';
 import colors from '../../assets/colors/colors';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import GoBack from '../../assets/NewVersion/GoBack.png';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth } from '../api/firebaseConfig';
+import { signOut } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const icons = {
+  editProfile: require('../../assets/settingIcons/user.png'),
+  security: require('../../assets/settingIcons/verified.png'),
+  notifications: require('../../assets/settingIcons/notification.png'),
+  privacy: require('../../assets/settingIcons/privacy.png'),
+  subscription: require('../../assets/settingIcons/subscription.png'),
+  help: require('../../assets/settingIcons/help.png'),
+  terms: require('../../assets/settingIcons/terms.png'),
+  report: require('../../assets/settingIcons/report.png'),
+  addAccount: require('../../assets/settingIcons/addAccount.png'),
+  logout: require('../../assets/settingIcons/logOut.png'),
+};
 
-const   ProfileSettingScreen = () => {
-  const navigation = useNavigation();
-
-  const Section = ({ title, items }) => (
-  <View style={{ marginBottom: 16 }}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <View style={styles.sectionContainer}>         
-      {items.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.row}
-          onPress={item.onPress || (() => {})}
-        >
-          <Image source={item.icon} style={styles.icon} />
-          <Text style={styles.rowText}>{item.label}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  </View>
-);
+const ProfileSettingScreen = ({ navigation }) => {
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      await AsyncStorage.removeItem('@user_data');
+      await AsyncStorage.setItem('resetProfileScreen', 'true');
+      await AsyncStorage.setItem('bannerMessage', 'You have signed out!');
+      await AsyncStorage.setItem('bannerType', 'success');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'SignInUpScreen' }],
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      await AsyncStorage.setItem('bannerMessage', 'Failed to sign out.');
+      await AsyncStorage.setItem('bannerType', 'error');
+      Alert.alert('Error', 'Failed to sign out.');
+    }
+  };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Setting</Text>
-
-      <Section
-        title="Account"
-        items={[
-          { label: 'Edit profile', icon: require('../../assets/ProfileSetting/edit-profile.png') },
-          { label: 'Security', icon: require('../../assets/ProfileSetting/security.png') },
-          { label: 'Notifications', icon: require('../../assets/ProfileSetting/notifications.png') },
-          { label: 'Privacy', icon: require('../../assets/ProfileSetting/privacy.png') },
-        ]}
-      />
-
-      <Section
-        title="Support & About"
-        items={[
-          { label: 'My Subscription', icon: require('../../assets/ProfileSetting/subscription.png') },
-          { label: 'Help & Support', icon: require('../../assets/ProfileSetting/help.png') },
-          { label: 'Terms and Policies', icon: require('../../assets/ProfileSetting/terms.png') },
-        ]}
-      />
-
-      <Section
-        title="Actions"
-        items={[
-          { label: 'Report a problem', icon: require('../../assets/ProfileSetting/report.png') },
-          { label: 'Add account', icon: require('../../assets/ProfileSetting/add-account.png') },
-          { label: 'Log out', icon: require('../../assets/ProfileSetting/logout.png'), onPress: () => console.log('Logout pressed') },
-        ]}
-      />
-    </ScrollView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView style={styles.root}>
+        {/* Top Bar */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Image source={GoBack} style={styles.goback} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Setting</Text>
+        </View>
+        <View style={styles.scrollContent}>
+          {/* Account Section */}
+          <Text style={styles.sectionHeader}>Account</Text>
+          <View style={styles.card}>
+            <SettingItem icon={icons.editProfile} label="Edit profile" onPress={() => navigation.navigate('EditProfileScreen')} />
+            <SettingItem icon={icons.security} label="Security" onPress={() => { }} />
+            <SettingItem icon={icons.notifications} label="Notifications" onPress={() => { }} />
+            <SettingItem icon={icons.privacy} label="Privacy" onPress={() => { }} />
+          </View>
+          {/* Support & About Section */}
+          <Text style={styles.sectionHeader}>Support & About</Text>
+          <View style={styles.card}>
+            <SettingItem icon={icons.subscription} label="My Subscription" onPress={() => { }} />
+            <SettingItem icon={icons.help} label="Help & Support" onPress={() => { }} />
+            <SettingItem icon={icons.terms} label="Terms and Policies" onPress={() => { }} />
+          </View>
+          {/* Actions Section */}
+          <Text style={styles.sectionHeader}>Actions</Text>
+          <View style={styles.card}>
+            <SettingItem icon={icons.report} label="Report a problem" onPress={() => { }} />
+            <SettingItem icon={icons.addAccount} label="Add account" onPress={() => { }} />
+            <SettingItem icon={icons.logout} label="Log out" onPress={handleSignOut} />
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
+const SettingItem = ({ icon, label, onPress }) => (
+  <TouchableOpacity style={styles.settingItem} onPress={onPress}>
+    <Image source={icon} style={styles.settingIcon} />
+    <Text style={styles.settingLabel}>{label}</Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: '#f5eeff',
+    padding: 20,
+    backgroundColor: '#F6F1FF', // light purple
   },
-  backButton: {
-    padding: 16,
-  },
-  backArrow: {
-    fontSize: 24,
-    color: colors.primary,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: '600',
-    alignSelf: 'center',
-    marginBottom: 10,
-    color: colors.text,
-  },
-  sectionContainer: {
-    backgroundColor: '#fff',
-    marginHorizontal: 40,
-    marginVertical: 8,
-    borderRadius: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
-    paddingLeft: 40,
-    marginBottom: 6,
-  },
-  input: {
-    width: '100%',
-    marginBottom: 25,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    padding: 10,
-  },
-  row: {
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    marginTop: 10,
+    marginBottom: 20,
   },
-  icon: {
+  backButton: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  goback: {
+    width: 30,
+    height: 30,
+  },
+  title: {
+    flex: 1, // Takes up remaining space
+    textAlign: 'center', // Centers the text
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'black', // Use your primary color
+    marginLeft: -30, // Adjust to center the title properly
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  sectionHeader: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginTop: 24,
+    marginBottom: 10,
+    color: '#111',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 8,
+    marginBottom: 10,
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    // Elevation for Android
+    elevation: 2,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  settingIcon: {
     width: 24,
     height: 24,
-    marginRight: 30,
+    marginRight: 16,
     resizeMode: 'contain',
   },
-  rowText: {
-    fontFamily: 'Roboto',
+  settingLabel: {
     fontSize: 16,
-    color: '#111',
+    color: '#222',
   },
 });
 

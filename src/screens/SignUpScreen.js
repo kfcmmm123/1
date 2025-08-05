@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, View, TextInput, Text, TouchableOpacity, StyleSheet, Linking, Image, Alert, Modal, ActivityIndicator } from 'react-native';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../api/firebaseConfig';
 import Eye from '../../assets/NewVersion/Eye.png';
 import Check from '../../assets/NewVersion/Check.png';
@@ -51,42 +51,44 @@ const SignUpScreen = ({ navigation }) => {
             setShowTermsModal(true); // Open modal if terms are not agreed
             return;
         }
-    
-        createUserWithEmailAndPassword(auth, email, password)
-        .then(async (userCredentials) => {
-            // Create a document in Firestore after account creation
+
+        setLoading(true);
+        try {
+            const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
             const userDocRef = doc(db, 'users', userCredentials.user.uid);
             await setDoc(userDocRef, {
-            email: email,
-            createdAt: new Date() // Add other initial fields as needed
+                email: email,
+                createdAt: new Date()
             });
 
-            await AsyncStorage.setItem('isNewUser', 'true'); // Set isNewUser to true on successful sign-up
-            sendEmailVerification(userCredentials.user)
-            .then(() => {
+            await AsyncStorage.setItem('isNewUser', 'true');
+
+            try {
+                await sendEmailVerification(userCredentials.user);
+                setLoading(false);
                 Alert.alert('Success', 'Verification email sent! Please check your email to verify your account.');
                 navigation.replace('SignInScreen');
-            })
-            .catch((error) => {
+            } catch (error) {
+                setLoading(false);
                 console.error('Error sending email verification', error);
-                Alert.alert('Error', 'Error sending email verification');
-            });
-        })
-        .catch((error) => {
-            switch (error.code) {
-            case 'auth/email-already-in-use':
-                Alert.alert('Error', 'An account with this email already exists.');
-                break;
-            case 'auth/invalid-email':
-                Alert.alert('Error', 'The email address is not valid.');
-                break;
-            case 'auth/weak-password':
-                Alert.alert('Error', 'The password is too weak. Password must be at least 6 characters.');
-                break;
-            default:
-                Alert.alert('Error', 'Error signing up: ' + error.message);
+                Alert.alert('Error', 'Error sending email verification. Please try again later.');
             }
-        });
+        } catch (error) {
+            setLoading(false);
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    Alert.alert('Error', 'An account with this email already exists.');
+                    break;
+                case 'auth/invalid-email':
+                    Alert.alert('Error', 'The email address is not valid.');
+                    break;
+                case 'auth/weak-password':
+                    Alert.alert('Error', 'The password is too weak. Password must be at least 6 characters.');
+                    break;
+                default:
+                    Alert.alert('Error', 'Error signing up: ' + error.message);
+            }
+        }
     };
 
     const togglePasswordVisibility = () => {
@@ -278,6 +280,7 @@ const SignUpScreen = ({ navigation }) => {
                             onPress={() => {
                                 if (agreeToTerms) {
                                     setShowTermsModal(false);
+                                    handleSignUp();
                                 }
                             }}
                             disabled={!agreeToTerms}

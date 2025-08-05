@@ -36,12 +36,14 @@ const NotificationBanner = ({ message, type }) => {
 const styles = StyleSheet.create({
   banner: {
     position: 'absolute',
-    top: 0,
+    top: 50,
     left: 0,
     right: 0,
     padding: 10,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    zIndex: 9999,
+    elevation: 9999,
   },
   success: {
     backgroundColor: colors.primary,

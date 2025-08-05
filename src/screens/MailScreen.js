@@ -1,292 +1,328 @@
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, StyleSheet, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { getFriends, getUserChats } from '../services/chatService';
+import { auth } from '../api/firebaseConfig';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import colors from '../../assets/colors/colors';
-import MailSearchBar from '../components/MailSearchBar';
-import { usePushNotification } from '../services/pushnotification';
+// Default avatar for users
+const defaultAvatar = require('../../assets/profile-pic.png');
 
-const MailScreen = ({ navigation }) => {
-  usePushNotification();
-
-  const [messages, setMessages] = useState([
-  ]);
-  const [showMessages, setShowMessages] = useState(true);
-  const [starredMessages, setStarredMessages] = useState([]);
-  const [selectedMessages, setSelectedMessages] = useState([]);
-
-  const CheckBox = ({ checked, onPress }) => {
-    // Only render the checkbox if isSelectMode is true
-    if (!isSelectMode) {
-      return null;
-    }
-  
-    return (
-      <TouchableOpacity onPress={onPress} style={styles.checkboxContainer}>
-        <View style={[styles.checkbox, checked && styles.checked]}>
-          {checked && (
-            <MaterialCommunityIcons name="checkbox-marked" size={24} color="blue" />
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-  
-  
-  
+const MailScreen = () => {
+  const [activeTab, setActiveTab] = useState('Chat');
+  const [friends, setFriends] = useState([]);
+  const [chats, setChats] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigation = useNavigation();
 
   useEffect(() => {
-    const registerForPushNotifications = async () => {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
+    // Listen for friends
+    const friendsUnsubscribe = getFriends((friendsList) => {
+      setFriends(friendsList);
+    });
 
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
+    // Listen for chats
+    const chatsUnsubscribe = getUserChats((chatsList) => {
+      setChats(chatsList);
+    });
 
-      if (finalStatus !== 'granted') {
-        return;
-      }
-
-      const tokenData = await Notifications.getExpoPushTokenAsync();
-      const token = tokenData.data;
-
-      console.log('Expo Push Token:', token);
+    return () => {
+      if (friendsUnsubscribe) friendsUnsubscribe();
+      if (chatsUnsubscribe) chatsUnsubscribe();
     };
-
-    (async () => {
-      await registerForPushNotifications();
-    })();
   }, []);
 
-  const navigateToIndividualMail = (message) => {
-    navigation.navigate('IndividualMail', { message });
-  };
-  const [isSelectMode, setIsSelectMode] = useState(false);
-  const isMessageStarred = (messageId) => starredMessages.includes(messageId);
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now - date) / (1000 * 60 * 60);
 
-  const toggleSelectMenu = () => {
-    setIsSelectMode((prevIsSelectMode) => !prevIsSelectMode);
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (diffInHours < 48) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString();
+    }
   };
 
-  const selectMessage = (messageId) => {
-    if (showMessages) {
-      setSelectedMessages((prevSelectedMessages) => {
-        if (prevSelectedMessages.includes(messageId)) {
-          return prevSelectedMessages.filter((id) => id !== messageId);
-        } else {
-          return [...prevSelectedMessages, messageId];
+  const getFilteredData = () => {
+    const data = activeTab === 'Chat' ? chats : friends;
+    if (!searchQuery.trim()) return data;
+
+    return data.filter(item => {
+      const name = activeTab === 'Chat' ? item.friendName : item.friendName;
+      return name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  };
+
+  const handleChatPress = (item) => {
+    if (activeTab === 'Chat') {
+      // Navigate to existing chat
+      navigation.navigate('ChatScreen', {
+        chatUser: {
+          friendId: item.participants.find(id => id !== auth.currentUser?.uid),
+          friendName: item.friendName || 'Friend',
+          orgName: 'Chat'
+        },
+        chatId: item.id
+      });
+    } else {
+      // Start new chat with friend
+      navigation.navigate('ChatScreen', {
+        chatUser: {
+          friendId: item.friendId,
+          friendName: item.friendName,
+          orgName: 'Friend'
         }
       });
     }
   };
 
-  const deleteSelectedMessages = () => {
-    const updatedMessages = messages.filter((message) => !selectedMessages.includes(message.id));
-    setMessages(updatedMessages);
-    setSelectedMessages([]);
-    setShowMessages(updatedMessages.length > 0);
+  const renderChatItem = ({ item }) => {
+    const isChat = activeTab === 'Chat';
+    const displayName = isChat ? (item.friendName || 'Friend') : item.friendName;
+    const displayEmail = isChat ? (item.friendEmail || '') : item.friendEmail;
+    const lastMessage = isChat ? (item.lastMessage || 'Start a conversation') : 'Tap to start chatting';
+    const time = isChat ? formatTime(item.lastMessageTime) : '';
+
+    return (
+      <TouchableOpacity
+        style={styles.chatItem}
+        onPress={() => handleChatPress(item)}
+      >
+        <Image source={defaultAvatar} style={styles.avatar} />
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.onlineDot} />
+            <Text style={styles.name}>{displayName}</Text>
+          </View>
+          {displayEmail && (
+            <Text style={styles.email}>{displayEmail}</Text>
+          )}
+          <Text style={styles.lastMessage} numberOfLines={1}>{lastMessage}</Text>
+        </View>
+        {isChat && <Text style={styles.time}>{time}</Text>}
+      </TouchableOpacity>
+    );
   };
 
-  const handleDelete = () => {
-    console.log('Delete button pressed');
-    deleteSelectedMessages();
-  };
-
-  const toggleStar = (messageId) => {
-    const isStarred = starredMessages.includes(messageId);
-    if (isStarred) {
-      setStarredMessages(starredMessages.filter((id) => id !== messageId));
-    } else {
-      setStarredMessages([...starredMessages, messageId]);
-    }
-  };
-
-  const profileImages = {
-    1: require('../../assets/profile-pic.jpeg'),
-    2: require('../../assets/profile-pic.jpeg'),
-    3: require('../../assets/profile-pic.jpeg'),
-  };
+  const renderEmptyState = () => (
+    <View style={styles.emptyState}>
+      <Ionicons
+        name={activeTab === 'Chat' ? 'chatbubbles-outline' : 'people-outline'}
+        size={48}
+        color="#ccc"
+      />
+      <Text style={styles.emptyText}>
+        {activeTab === 'Chat'
+          ? 'No chats yet. Start a conversation with a friend!'
+          : 'No friends yet. Add friends to start chatting!'
+        }
+      </Text>
+      {activeTab === 'Friends' && ( 
+        <TouchableOpacity
+          style={styles.addFriendButton}
+          onPress={() => navigation.navigate('FriendRequestScreen')}
+        >
+          <Text style={styles.addFriendButtonText}>Add Friends</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   return (
-    <View style={styles.container}>
-       <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')}>
-            <Image
-                source={require('../../assets/adaptive-icon-cropped.png')}
-                style={styles.icon}
-            />
-            </TouchableOpacity>
-            <Text style = { styles.header }>Mail</Text>
-      <MailSearchBar />
-      {messages.length > 0 ? (
-        <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item, index }) => (
-          <>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, paddingHorizontal: 10 }}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => navigation.navigate('AboutUsScreen')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={require('../../assets/adaptive-icon-cropped.png')} style={styles.icon} />
+            <Text style={{ fontSize: 20, fontWeight: '500', marginRight: 5 }}>VolunTrack</Text>
+          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}>
             <TouchableOpacity
-  onPress={() => {
-    if (isSelectMode) {
-      selectMessage(item.id);
-    } else {
-      navigateToIndividualMail(item);
-    }
-  }}
->
-  <View
-    style={[
-      styles.messageItem,
-      selectedMessages.includes(item.id) && styles.selectedMessage,
-    ]}
-  >
-    {isSelectMode && (
-    <CheckBox
-    checked={selectedMessages.includes(item.id)}
-    onPress={() => selectMessage(item.id)}
-  />
-
-  )}
-                <TouchableOpacity onPress={() => navigateToIndividualMail(item)}>
-                  <Image source={profileImages[item.id]} style={styles.profileImage} />
-                </TouchableOpacity>
-                <View style={styles.messageContent}>
-                  <Text style={styles.messageText}>{item.text}</Text>
-                </View>
-                <TouchableOpacity onPress={() => toggleStar(item.id)} style={styles.starIcon}>
-                  {isMessageStarred(item.id) ? (
-                    <MaterialIcons name="star" size={18} color="gold" />
-                  ) : (
-                    <MaterialIcons name="star-outline" size={18} color="gray" />
-                  )}
-                </TouchableOpacity>
-              </View>
+              style={{ marginLeft: 5 }}
+              onPress={() => navigation.navigate('FriendRequestScreen')}
+            >
+              <Ionicons name={'person-add-outline'} size={30} color={'#000000'} />
             </TouchableOpacity>
-            {index < messages.length - 1 && <View style={styles.divider} />}
-          </>
-        )}
-      />
-    ) : (
-      <View style={styles.noMessageContainer}>
-        <Text style={styles.noMessageText}>No messages available</Text>
+            <TouchableOpacity style={{ marginLeft: 5 }} >
+              <Ionicons name={'settings-outline'} size={30} color={'#000000'} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Tabs */}
+        <View style={styles.tabBar}>
+          <TouchableOpacity onPress={() => setActiveTab('Friends')} style={styles.tabItem}>
+            <Text style={[styles.tabText, activeTab === 'Friends' && styles.tabTextActive]}>Friends</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTab('Chat')} style={styles.tabItem}>
+            <Text style={[styles.tabText, activeTab === 'Chat' && styles.tabTextActive]}>Chat</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.tabIndicatorContainer}>
+          <View style={[styles.tabIndicator, activeTab === 'Friends' ? { left: '12%' } : { left: '62%' }]} />
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchBarContainer}>
+          <TextInput
+            style={styles.searchBar}
+            placeholder={`Search ${activeTab}`}
+            placeholderTextColor="#aaa"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+
+        {/* Chat/Friends List */}
+        <FlatList
+          data={getFilteredData()}
+          keyExtractor={item => item.id}
+          renderItem={renderChatItem}
+          ItemSeparatorComponent={() => <View style={styles.divider} />}
+          ListEmptyComponent={renderEmptyState}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
-    )}
-    {messages.length > 0 && (
-      <View style={styles.topRightIcons} elevation={5}>
-        <TouchableOpacity onPress={handleDelete}>
-          <Image source={require('../../assets/trash.png')} style={styles.topRightIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={toggleSelectMenu}>
-          <Image source={require('../../assets/menuu.png')} style={styles.topRightIcon} />
-        </TouchableOpacity>
-      </View>
-    )}
-    <StatusBar style="auto" />
-  </View>
-);
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingTop: 20,
-    paddingHorizontal: 15,
-  },
-  icon: {
-    width: 60,
-    height: 60,
-    marginTop: 40,
-    marginBottom: 15,
-  },
-  header: {
-    color: colors.primary,
-    fontFamily: 'PingFangSC-Semibold',
-    fontSize: 28,
-    marginVertical: 15,
-    marginLeft: 15,
-    textAlign: 'left',
-    fontWeight: 'bold',
-  },
-  messageItem: {
+  topBar: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
-    padding: 12,
-    marginHorizontal: 15,
-  },
-  profileImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 20,
+    marginTop: 15,
+    marginLeft: 10,
     marginRight: 10,
   },
-  messageContent: {
-    flex: 1,
+  icon: {
+    width: 40,
+    height: 40,
+    marginRight: 5,
+  },
+  tabBar: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  messageText: {
-    color: 'rgb(58,59,60)',
-    fontSize: 14,
-  },
-  checkboxContainer: {
-    padding: 8,
-  },
-  checkbox: {
-    width: 15,
-    height: 15,
-    borderWidth: 1,
-    borderColor: 'grey',
-    borderRadius: 5,
-    backgroundColor: 'transparent', // Set to transparent
     justifyContent: 'center',
+    marginTop: 20,
+  },
+  tabItem: {
+    flex: 1,
     alignItems: 'center',
+    paddingVertical: 8,
   },
-  checked: {
-    backgroundColor: colors.primary, // Set the desired checked color here
-    borderColor: colors.primary,
+  tabText: {
+    fontSize: 22,
+    color: '#B9B3C6',
+    fontWeight: 'bold',
   },
-  starIcon: {
-    marginLeft: 'auto',
+  tabTextActive: {
+    color: '#884EFE',
   },
-  topRightIcons: {
+  tabIndicatorContainer: {
+    height: 3,
+    width: '100%',
+    position: 'relative',
+    marginBottom: 10,
+  },
+  tabIndicator: {
     position: 'absolute',
-    top: 20,
-    marginTop:40,
-    marginLeft:20,
-    right: 20,
+    width: '25%',
+    height: 3,
+    backgroundColor: '#884EFE',
+    borderRadius: 2,
+    bottom: 0,
+  },
+  searchBarContainer: {
+    marginHorizontal: 20,
+    marginBottom: 10,
+  },
+  searchBar: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 16,
+  },
+  chatItem: {
     flexDirection: 'row',
-    alignSelf: 'flex-end',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
   },
-  topRightIcon: {
-    width: 25,
-    height: 25,
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#884EFE',
+    marginRight: 12,
+  },
+  onlineDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#884EFE',
+    marginRight: 6,
+  },
+  name: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#222',
+  },
+  email: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 2,
+  },
+  lastMessage: {
+    color: '#888',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  time: {
+    color: '#888',
+    fontSize: 13,
     marginLeft: 10,
-  },
-  trashIcon: {
-    marginLeft: 10,
-  },
-  aboutUsIcon: {
-    marginLeft: 10
   },
   divider: {
-    height:  0.8,
-    backgroundColor: 'lightgray',
-    marginHorizontal: 0,
+    height: 1,
+    backgroundColor: '#eee',
+    marginLeft: 80,
   },
-  noMessageContainer: {
+  emptyState: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 50,
   },
-  noMessageText: {
-    fontSize: 18,
-    color: 'gray',
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
-  selectedMessage: {
-    backgroundColor: colors.primaryLight,
+  addFriendButton: {
+    backgroundColor: '#884EFE',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  addFriendButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
-export default MailScreen
+
+export default MailScreen;
