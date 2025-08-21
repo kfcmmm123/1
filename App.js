@@ -29,6 +29,7 @@ import BookmarkedScreen from './src/screens/BookmarkedScreen';
 import EditProfileScreen from './src/screens/ProfileSettings/EditProfileScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import FriendRequestScreen from './src/screens/FriendRequestScreen';
+import SecurityScreen from './src/screens/ProfileSettings/SecurityScreen';
 
 import { onAuthStateChanged, getAuth } from 'firebase/auth';
 import { auth } from './src/api/firebaseConfig'; // Your configured auth
@@ -278,6 +279,14 @@ export default function App() {
           component={FriendRequestScreen}
           options={{
             headerShown: false,
+          }}
+        />
+        <RootStack.Screen
+          name="SecurityScreen"
+          component={SecurityScreen}
+          options={{
+            headerShown: false,
+            title: 'Security',
           }}
         />
       </RootStack.Navigator>
