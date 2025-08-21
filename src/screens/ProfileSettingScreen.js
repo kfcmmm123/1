@@ -55,7 +55,7 @@ const ProfileSettingScreen = ({ navigation }) => {
           <Text style={styles.sectionHeader}>Account</Text>
           <View style={styles.card}>
             <SettingItem icon={icons.editProfile} label="Edit profile" onPress={() => navigation.navigate('EditProfileScreen')} />
-            <SettingItem icon={icons.security} label="Security" onPress={() => { }} />
+            <SettingItem icon={icons.security} label="Security" onPress={() => navigation.navigate('SecurityScreen')} />
             <SettingItem icon={icons.notifications} label="Notifications" onPress={() => { }} />
             <SettingItem icon={icons.privacy} label="Privacy" onPress={() => { }} />
           </View>
